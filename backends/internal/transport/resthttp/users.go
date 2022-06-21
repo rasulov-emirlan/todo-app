@@ -159,3 +159,17 @@ func (s *server) UsersRefresh(ctx *gin.Context) {
 
 	respond(ctx, http.StatusOK, out, nil)
 }
+
+func (s *server) UsersLogout(ctx *gin.Context) {
+	ctx.SetCookie(
+		cookieNameRefreshKey,
+		"",
+		-1,
+		"/",
+		"",
+		false,
+		true,
+	)
+
+	respond(ctx, http.StatusOK, nil, nil)
+}

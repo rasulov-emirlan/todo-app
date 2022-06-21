@@ -64,5 +64,6 @@ func (s *server) setRoutes() {
 		usersGroup.POST("/auth/signup", s.UsersSignUp)
 		usersGroup.POST("/auth/signin", s.UsersSignIn)
 		usersGroup.GET("/auth/refresh", s.UsersRefresh)
+		usersGroup.DELETE("/auth/logout", s.UsersLogout)
 	}
 }
