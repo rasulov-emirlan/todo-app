@@ -63,7 +63,9 @@ func (s *server) setRoutes() {
 		// TODO: separate users logic and auth
 		usersGroup.POST("/auth/signup", s.UsersSignUp)
 		usersGroup.POST("/auth/signin", s.UsersSignIn)
-		usersGroup.GET("/auth/refresh", s.UsersRefresh)
+		usersGroup.POST("/auth/refresh", s.UsersRefresh)
 		usersGroup.DELETE("/auth/logout", s.UsersLogout)
+
+		usersGroup.DELETE("/:id", s.UsersDelete, s.isAdmin)
 	}
 }

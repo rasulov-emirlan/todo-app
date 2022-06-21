@@ -16,9 +16,9 @@ CREATE TABLE IF NOT EXISTS users (
     username text NOT NULL,
     email text NOT NULL,
     password text NOT NULL,
-    role_id integer NOT NULL REFERENCES roles(id),
+    role_id integer NOT NULL DEFAULT 1 REFERENCES roles(id),
     created_at timestamp NOT NULL DEFAULT NOW(),
-    updated_at timestamp NOT NULL DEFAULT NOW()
+    updated_at timestamp
 );
 -- +goose StatementEnd
 

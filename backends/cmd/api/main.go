@@ -17,7 +17,11 @@ import (
 )
 
 func main() {
-	config, err := config.LoadConfigs("")
+	var cfgfilename string
+	if len(os.Args) > 1 {
+		cfgfilename = os.Args[1]
+	}
+	config, err := config.LoadConfigs(cfgfilename)
 	if err != nil {
 		log.Fatal(err)
 	}

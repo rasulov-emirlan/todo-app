@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"log"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -14,14 +15,16 @@ type usersRepository struct {
 }
 
 func (r *usersRepository) Create(ctx context.Context, email, hashedPassword, username string) (id string, err error) {
-	sql, args, err := sq.Insert("users").Columns("id",
-		"email", "password", "role", "username", "created_at", "updated_at").
-		Values(id, email, hashedPassword, username, time.Now(), time.Now()).
+	sql, args, err := sq.Insert("users").Columns(
+		"email", "password", "username", "created_at", "updated_at").
+		Values(email, hashedPassword, username, time.Now(), time.Now()).
 		Suffix("RETURNING id").
 		PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return "", err
 	}
+
+	log.Println(sql)
 
 	conn, err := r.conn.Acquire(ctx)
 	if err != nil {
@@ -35,7 +38,7 @@ func (r *usersRepository) Create(ctx context.Context, email, hashedPassword, use
 }
 
 func (r *usersRepository) Get(ctx context.Context, id string) (user users.User, err error) {
-	sql, args, err := sq.Select(`id, email, password, role, username, created_at, updated_at`).
+	sql, args, err := sq.Select(`id, email, password, role_id, username, created_at, updated_at`).
 		From("users").Where(sq.Eq{"id": id}).PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return user, err
@@ -56,7 +59,7 @@ func (r *usersRepository) Get(ctx context.Context, id string) (user users.User, 
 }
 
 func (r *usersRepository) GetByEmail(ctx context.Context, email string) (user users.User, err error) {
-	sql, args, err := sq.Select(`id, email, password, role, username, created_at, updated_at`).
+	sql, args, err := sq.Select(`id, email, password, role_id, username, created_at, updated_at`).
 		From("users").Where(sq.Eq{"email": email}).PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return user, err

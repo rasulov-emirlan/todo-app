@@ -10,8 +10,8 @@ type (
 	}
 
 	SignInOutput struct {
-		AccessKey  string
-		RefreshKey string
+		AccessKey  string `json:"accessKey"`
+		RefreshKey string `json:"refreshKey"`
 	}
 
 	JWTaccess struct {

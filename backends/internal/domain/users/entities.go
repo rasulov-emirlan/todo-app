@@ -30,15 +30,14 @@ type (
 	}
 )
 
-func (u *User) ComparePassword(password string) error {
-	return bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password))
+func comparePassword(password, hash string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 }
 
-func (u *User) HashPassword(password string) error {
+func hashPassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return "", err
 	}
-	u.PasswordHash = string(hash)
-	return nil
+	return string(hash), nil
 }

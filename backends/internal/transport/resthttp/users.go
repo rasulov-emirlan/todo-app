@@ -2,6 +2,7 @@ package resthttp
 
 import (
 	"errors"
+	"io"
 	"net/http"
 	"time"
 
@@ -33,12 +34,17 @@ const (
 )
 
 var (
-	ErrNoRefreshProvided = errors.New("refresh key has to be provided via cookie or request body")
+	ErrNoRefreshProvided      = errors.New("refresh key has to be provided via cookie or request body")
+	ErrRequestBodyNotProvided = errors.New("request body has to be provided")
+	ErrParamNotProvided       = errors.New("parameter has to be provided")
 )
 
 func (s *server) UsersSignUp(ctx *gin.Context) {
 	var inp reqUsersSignUp
 	if err := ctx.ShouldBindJSON(&inp); err != nil {
+		if errors.Is(err, io.EOF) {
+			err = ErrRequestBodyNotProvided
+		}
 		respond(
 			ctx,
 			http.StatusBadRequest,
@@ -170,6 +176,31 @@ func (s *server) UsersLogout(ctx *gin.Context) {
 		false,
 		true,
 	)
+
+	respond(ctx, http.StatusOK, nil, nil)
+}
+
+func (s *server) UsersDelete(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if len(id) == 0 {
+		respond(
+			ctx,
+			http.StatusBadRequest,
+			nil,
+			[]string{ErrParamNotProvided.Error()},
+		)
+		return
+	}
+
+	if err := s.usersService.Delete(ctx, id); err != nil {
+		respond(
+			ctx,
+			http.StatusInternalServerError,
+			nil,
+			[]string{err.Error()},
+		)
+		return
+	}
 
 	respond(ctx, http.StatusOK, nil, nil)
 }
