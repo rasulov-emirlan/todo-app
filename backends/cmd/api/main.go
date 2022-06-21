@@ -28,6 +28,7 @@ func main() {
 	)
 	defer logger.Sync()
 
+	log.Println("config:", config)
 	logger.Info("Logger initialized")
 
 	url := url.URL{
@@ -36,14 +37,17 @@ func main() {
 		Host:   config.Database.Host + ":" + config.Database.Port,
 		Path:   config.Database.Name,
 	}
-	store, err := postgres.NewRepository(url.String(), true)
+	store, err := postgres.NewRepository(url.String()+"?sslmode=disable", true)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	logger.Info("Store initialized")
 
-	usersService := users.NewService(store.Users(), logger, []byte(config.JWTsecret))
+	usersService := users.NewService(
+		store.Users(),
+		logger,
+		[]byte(config.JWTsecret))
 
 	logger.Info("Services initialized")
 

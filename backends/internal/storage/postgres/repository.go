@@ -16,10 +16,18 @@ type repository struct {
 }
 
 func NewRepository(url string, withMigrations bool) (*repository, error) {
-	time.Sleep(time.Second * 30)
 	conn, err := pgxpool.Connect(context.Background(), url)
 	if err != nil {
-		return nil, err
+		for i := 0; i < 10; i++ {
+			time.Sleep(time.Second * time.Duration(i))
+			conn, err = pgxpool.Connect(context.Background(), url)
+			if err == nil {
+				break
+			}
+		}
+		if err != nil {
+			return nil, err
+		}
 	}
 	if err := conn.Ping(context.Background()); err != nil {
 		return nil, err

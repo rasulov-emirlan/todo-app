@@ -10,9 +10,9 @@ type Config struct {
 		Output string `env:"LOG_OUTPUT" env-default:"stdout"`
 	}
 	Database struct {
-		Host string `env:"POSTGRES_HOST" env-default:"localhost"`
+		Host string `env:"POSTGRES_HOST" env-default:"database"`
 		Port string `env:"POSTGRES_PORT" env-default:"5432"`
-		User string `env:"POSTGRES_USERNAME" env-default:"postgres"`
+		User string `env:"POSTGRES_USER" env-default:"postgres"`
 		Pass string `env:"POSTGRES_PASSWORD" env-default:"postgres"`
 		Name string `env:"POSTGRES_DB" env-default:"todos"`
 	}
