@@ -32,8 +32,10 @@ func NewRepository(url string, withMigrations bool) (*repository, error) {
 	if err := conn.Ping(context.Background()); err != nil {
 		return nil, err
 	}
-	if err := migrations.Up(url); err != nil {
-		return nil, err
+	if withMigrations {
+		if err := migrations.Up(url); err != nil {
+			return nil, err
+		}
 	}
 	return &repository{
 		conn:            conn,
