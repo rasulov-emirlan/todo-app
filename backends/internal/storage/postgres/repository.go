@@ -5,21 +5,21 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/storage/postgres/migrations"
 )
 
 type repository struct {
 	conn *pgxpool.Pool
 
-	usersRepository users.Repository
+	usersRepository *usersRepository
+	todosRepository *todosRepository
 }
 
 func NewRepository(url string, withMigrations bool) (*repository, error) {
 	conn, err := pgxpool.Connect(context.Background(), url)
 	if err != nil {
-		for i := 0; i < 10; i++ {
-			time.Sleep(time.Second * time.Duration(i))
+		for i := 0; i < 60; i++ {
+			time.Sleep(time.Second)
 			conn, err = pgxpool.Connect(context.Background(), url)
 			if err == nil {
 				break
@@ -48,6 +48,10 @@ func (r *repository) Close() error {
 	return nil
 }
 
-func (r *repository) Users() users.Repository {
+func (r *repository) Users() *usersRepository {
 	return r.usersRepository
+}
+
+func (r *repository) Todos() *todosRepository {
+	return r.todosRepository
 }

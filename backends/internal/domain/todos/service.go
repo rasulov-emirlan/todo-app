@@ -9,20 +9,20 @@ import (
 
 type (
 	Repository interface {
-		Create(ctx context.Context, userID, title, body string, deadline time.Time) (id string, err error)
+		Create(ctx context.Context, inp CreateInput) (id string, err error)
 		Get(ctx context.Context, id string) (todo Todo, err error)
-		GetAll(ctx context.Context, config GetAllInput) (todos []Todo, total int, err error)
-		Update(ctx context.Context, id string, title, body string, deadline time.Time) error
+		GetAll(ctx context.Context, config GetAllInput) (todos []Todo, err error)
+		Update(ctx context.Context, inp UpdateInput) error
 		MarkAsComplete(ctx context.Context, id string) error
 		MarkAsNotComplete(ctx context.Context, id string) error
 		Delete(ctx context.Context, id string) error
 	}
 
 	Service interface {
-		Create(ctx context.Context, userID, title, body string, deadline time.Time) (id string, err error)
+		Create(ctx context.Context, inp CreateInput) (id string, err error)
 		Get(ctx context.Context, id string) (todo Todo, err error)
-		GetAll(ctx context.Context, config GetAllInput) (todos []Todo, total int, err error)
-		Update(ctx context.Context, id string, title, body string, deadline time.Time) error
+		GetAll(ctx context.Context, config GetAllInput) (todos []Todo, err error)
+		Update(ctx context.Context, inp UpdateInput) error
 		MarkAsComplete(ctx context.Context, id string) error
 		MarkAsNotComplete(ctx context.Context, id string) error
 		Delete(ctx context.Context, id string) error
@@ -41,17 +41,17 @@ func NewService(repo Repository, log *zap.Logger) Service {
 	}
 }
 
-func (s *service) Create(ctx context.Context, userID, title, body string, deadline time.Time) (id string, err error) {
-	if len(title) < 6 || len(title) > 100 {
+func (s *service) Create(ctx context.Context, inp CreateInput) (id string, err error) {
+	if len(inp.Title) < 6 || len(inp.Title) > 100 {
 		return "", ErrInvalidTitle
 	}
-	if len(body) > 2000 {
+	if len(inp.Body) > 2000 {
 		return "", ErrInvalidBody
 	}
-	if deadline.Before(time.Now()) {
+	if inp.Deadline.Before(time.Now()) {
 		return "", ErrInvalidDeadline
 	}
-	id, err = s.repo.Create(ctx, userID, title, body, deadline)
+	id, err = s.repo.Create(ctx, inp)
 	if err != nil {
 		return "", err
 	}
@@ -68,26 +68,26 @@ func (s *service) Get(ctx context.Context, id string) (todo Todo, err error) {
 	return todo, nil
 }
 
-func (s *service) GetAll(ctx context.Context, config GetAllInput) (todos []Todo, total int, err error) {
-	todos, total, err = s.repo.GetAll(ctx, config)
+func (s *service) GetAll(ctx context.Context, config GetAllInput) (todos []Todo, err error) {
+	todos, err = s.repo.GetAll(ctx, config)
 	if err != nil {
-		return todos, total, err
+		return todos, err
 	}
 
-	return todos, total, nil
+	return todos, nil
 }
 
-func (s *service) Update(ctx context.Context, id string, title, body string, deadline time.Time) error {
-	if len(title) < 6 || len(title) > 100 {
+func (s *service) Update(ctx context.Context, inp UpdateInput) error {
+	if len(inp.Title) < 6 || len(inp.Title) > 100 {
 		return ErrInvalidTitle
 	}
-	if len(body) > 2000 {
+	if len(inp.Body) > 2000 {
 		return ErrInvalidBody
 	}
-	if deadline.Before(time.Now()) {
+	if inp.Deadline.Before(time.Now()) {
 		return ErrInvalidDeadline
 	}
-	err := s.repo.Update(ctx, id, title, body, deadline)
+	err := s.repo.Update(ctx, inp)
 	if err != nil {
 		return err
 	}
