@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
@@ -15,6 +16,7 @@ type repository struct {
 }
 
 func NewRepository(url string, withMigrations bool) (*repository, error) {
+	time.Sleep(time.Second * 30)
 	conn, err := pgxpool.Connect(context.Background(), url)
 	if err != nil {
 		return nil, err
