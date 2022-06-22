@@ -17,6 +17,24 @@ var (
 )
 
 func (s *server) isAdmin(ctx *gin.Context) {
+	c, ok := ctx.Get(usersInfoInContext)
+	if !ok {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	claims, ok := c.(*users.JWTaccess)
+	if !ok {
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	if claims.Role != users.RoleAdmin {
+		ctx.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	ctx.Next()
+}
+
+func (s *server) requireAuth(ctx *gin.Context) {
 	accessKey := ctx.Request.Header.Get("Authorization")
 	if accessKey == "" {
 		ctx.AbortWithStatus(http.StatusUnauthorized)
@@ -27,9 +45,6 @@ func (s *server) isAdmin(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	if claims.Role != users.RoleAdmin {
-		ctx.AbortWithStatus(http.StatusForbidden)
-		return
-	}
+	ctx.Set(usersInfoInContext, &claims)
 	ctx.Next()
 }

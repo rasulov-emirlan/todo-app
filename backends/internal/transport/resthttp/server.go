@@ -66,6 +66,15 @@ func (s *server) setRoutes() {
 		usersGroup.POST("/auth/refresh", s.UsersRefresh)
 		usersGroup.DELETE("/auth/logout", s.UsersLogout)
 
-		usersGroup.DELETE("/:id", s.UsersDelete, s.isAdmin)
+		usersGroup.DELETE("/:id", s.UsersDelete, s.isAdmin, s.requireAuth)
+	}
+
+	todosGroup := s.router.Group("/todos", s.requireAuth)
+	{
+		todosGroup.POST("", s.TodosCreate)
+		todosGroup.GET("/:id", s.TodosGet)
+		todosGroup.GET("", s.TodosGetAll)
+		todosGroup.PATCH("/:id", s.TodosUpdate)
+		todosGroup.DELETE("/:id", s.TodosDelete)
 	}
 }
