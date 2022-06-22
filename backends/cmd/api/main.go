@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/url"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/rasulov-emirlan/todo-app/backends/config"
+	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/todos"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/storage/postgres"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp"
@@ -16,12 +18,14 @@ import (
 	"go.uber.org/zap"
 )
 
+var (
+	flagConfigName     = flag.String("config", "", "This flag accepts a path to .env file. If not provided we will get our configs from enviorment variables or we will use default values.")
+	flagWithMigrations = flag.Bool("migrations", false, "If 'true' is given then migrations will be ran automaticaly on start of the app")
+)
+
 func main() {
-	var cfgfilename string
-	if len(os.Args) > 1 {
-		cfgfilename = os.Args[1]
-	}
-	config, err := config.LoadConfigs(cfgfilename)
+	flag.Parse()
+	config, err := config.LoadConfigs(*flagConfigName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,7 +45,7 @@ func main() {
 		Host:   config.Database.Host + ":" + config.Database.Port,
 		Path:   config.Database.Name,
 	}
-	store, err := postgres.NewRepository(url.String()+"?sslmode=disable", true)
+	store, err := postgres.NewRepository(url.String()+"?sslmode=disable", *flagWithMigrations)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,12 +56,16 @@ func main() {
 		store.Users(),
 		logger,
 		[]byte(config.JWTsecret))
+	todosService := todos.NewService(
+		store.Todos(),
+		logger,
+	)
 
 	logger.Info("Services initialized")
 
 	srvr := resthttp.NewServer([]string{"*"},
 		config.Port, time.Second*15, time.Second*15,
-		logger, usersService, nil)
+		logger, usersService, todosService)
 
 	logger.Info("Server initialized")
 
