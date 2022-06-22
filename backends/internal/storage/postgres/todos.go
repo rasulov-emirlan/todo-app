@@ -161,11 +161,60 @@ func (r *todosRepository) Update(ctx context.Context, inp todos.UpdateInput) err
 }
 
 func (r *todosRepository) MarkAsComplete(ctx context.Context, id string) error {
-	panic("not implemented")
+	sql, args, err := sq.
+		Update("todos").
+		Set("completed", true).
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).ToSql()
+	if err != nil {
+		return err
+	}
+
+	conn, err := r.conn.Acquire(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+
+	_, err = conn.Exec(ctx, sql, args...)
+	return err
 }
+
 func (r *todosRepository) MarkAsNotComplete(ctx context.Context, id string) error {
-	panic("not implemented")
+	sql, args, err := sq.
+		Update("todos").
+		Set("completed", false).
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).ToSql()
+	if err != nil {
+		return err
+	}
+
+	conn, err := r.conn.Acquire(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+
+	_, err = conn.Exec(ctx, sql, args...)
+	return err
 }
+
 func (r *todosRepository) Delete(ctx context.Context, id string) error {
-	panic("not implemented")
+	sql, args, err := sq.
+		Delete("todos").
+		Where(sq.Eq{"id": id}).
+		PlaceholderFormat(sq.Dollar).ToSql()
+	if err != nil {
+		return err
+	}
+
+	conn, err := r.conn.Acquire(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+
+	_, err = conn.Exec(ctx, sql, args...)
+	return err
 }

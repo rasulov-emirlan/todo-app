@@ -1,10 +1,19 @@
 package resthttp
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
+)
+
+const (
+	usersInfoInContext = "userinfo"
+)
+
+var (
+	ErrNoCredentials = errors.New("could not find Athorization Bearer token in headers")
 )
 
 func (s *server) isAdmin(ctx *gin.Context) {
