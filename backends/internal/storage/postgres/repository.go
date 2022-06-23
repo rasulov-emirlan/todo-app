@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -33,6 +34,7 @@ func NewRepository(url string, withMigrations bool) (*repository, error) {
 		return nil, err
 	}
 	if withMigrations {
+		log.Println("Dfsfdfsdf")
 		if err := migrations.Up(url); err != nil {
 			return nil, err
 		}
@@ -40,6 +42,7 @@ func NewRepository(url string, withMigrations bool) (*repository, error) {
 	return &repository{
 		conn:            conn,
 		usersRepository: &usersRepository{conn},
+		todosRepository: &todosRepository{conn},
 	}, nil
 }
 

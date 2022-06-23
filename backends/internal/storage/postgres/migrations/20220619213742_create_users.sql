@@ -13,8 +13,8 @@ VALUES ('admin', 'Administrator'), ('user', 'users');
 
 CREATE TABLE IF NOT EXISTS users (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    username text NOT NULL,
-    email text NOT NULL,
+    username text NOT NULL UNIQUE,
+    email text NOT NULL ,
     password text NOT NULL,
     role_id integer NOT NULL DEFAULT 1 REFERENCES roles(id),
     created_at timestamp NOT NULL DEFAULT NOW(),

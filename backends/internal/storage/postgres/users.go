@@ -2,10 +2,12 @@ package postgres
 
 import (
 	"context"
-	"log"
+	"errors"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
 )
@@ -24,8 +26,6 @@ func (r *usersRepository) Create(ctx context.Context, email, hashedPassword, use
 		return "", err
 	}
 
-	log.Println(sql)
-
 	conn, err := r.conn.Acquire(ctx)
 	if err != nil {
 		return "", err
@@ -33,7 +33,14 @@ func (r *usersRepository) Create(ctx context.Context, email, hashedPassword, use
 	defer conn.Release()
 
 	err = conn.QueryRow(ctx, sql, args...).Scan(&id)
-
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == "23505" {
+				return id, users.ErrEmailIsTaken
+			}
+		}
+	}
 	return id, err
 }
 
@@ -76,6 +83,10 @@ func (r *usersRepository) GetByEmail(ctx context.Context, email string) (user us
 		&user.Username, &user.CreatedAt, &user.UpdatedAt,
 	)
 
+	if err == pgx.ErrNoRows {
+		return user, users.ErrNoSuchUser
+	}
+
 	return user, err
 }
 
@@ -115,4 +126,9 @@ func (r *usersRepository) Delete(ctx context.Context, id string) (err error) {
 
 	_, err = conn.Exec(ctx, sql, args...)
 	return err
+}
+
+var roleIds = map[int]users.Role{
+	1: users.RoleAdmin,
+	2: users.RoleUser,
 }

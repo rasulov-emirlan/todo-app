@@ -12,6 +12,7 @@ type (
 		Create(ctx context.Context, inp CreateInput) (id string, err error)
 		Get(ctx context.Context, id string) (todo Todo, err error)
 		GetAll(ctx context.Context, config GetAllInput) (todos []Todo, err error)
+		// Should not update fields that are empty in UpdateInput
 		Update(ctx context.Context, inp UpdateInput) error
 		MarkAsComplete(ctx context.Context, id string) error
 		MarkAsNotComplete(ctx context.Context, id string) error
@@ -22,6 +23,8 @@ type (
 		Create(ctx context.Context, inp CreateInput) (id string, err error)
 		Get(ctx context.Context, id string) (todo Todo, err error)
 		GetAll(ctx context.Context, config GetAllInput) (todos []Todo, err error)
+		// Will not update fields that are empty in UpdateInput.
+		// But ID is required
 		Update(ctx context.Context, inp UpdateInput) error
 		MarkAsComplete(ctx context.Context, id string) error
 		MarkAsNotComplete(ctx context.Context, id string) error
@@ -77,6 +80,9 @@ func (s *service) GetAll(ctx context.Context, config GetAllInput) (todos []Todo,
 	return todos, nil
 }
 
+// TODO: find a better way of sending changesets
+// maybe a map[customTypeForFields]any
+// would be a good solution...or maybe it would be so bad
 func (s *service) Update(ctx context.Context, inp UpdateInput) error {
 	if len(inp.Title) < 6 || len(inp.Title) > 100 {
 		return ErrInvalidTitle

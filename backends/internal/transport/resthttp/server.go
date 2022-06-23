@@ -1,6 +1,7 @@
 package resthttp
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -49,13 +50,7 @@ func (s *server) setRoutes() {
 	})
 
 	s.router.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, stdResponse{
-			Status: 200,
-			Data: gin.H{
-				"message": "pong",
-			},
-			Errors: nil,
-		})
+		respond(c, http.StatusOK, gin.H{"message": "pong"}, nil)
 	})
 
 	usersGroup := s.router.Group("/users")

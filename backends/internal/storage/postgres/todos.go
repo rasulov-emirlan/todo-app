@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"log"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -16,9 +17,10 @@ type todosRepository struct {
 }
 
 func (r *todosRepository) Create(ctx context.Context, inp todos.CreateInput) (id string, err error) {
-	sql, args, err := sq.Insert("todos").Columns(
-		"user_id", "title", "description", "deadline", "created_at", "updated_at").
-		Values(inp.UserID, inp.Title, inp.Body, inp.Deadline, time.Now(), time.Now()).
+	sql, args, err := sq.
+		Insert("todos").
+		Columns("user_id, title, description, deadline, created_at, updated_at").
+		Values(inp.UserID, inp.Title, inp.Body, inp.Deadline, time.Now(), nil).
 		Suffix("RETURNING id").
 		PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
@@ -36,11 +38,21 @@ func (r *todosRepository) Create(ctx context.Context, inp todos.CreateInput) (id
 }
 
 func (r *todosRepository) Get(ctx context.Context, id string) (todo todos.Todo, err error) {
-	sql, args, err := sq.Select(`id, user_id, title, description, "deadline", created_at, updated_at`).
-		From("todos").Where(sq.Eq{"id": id}).PlaceholderFormat(sq.Dollar).ToSql()
+	sql, args, err := sq.
+		Select(
+			`t.id, user_id, username, 
+			email, role_id, u.created_at,
+			title, description, deadline, 
+			t.created_at, t.updated_at`,
+		).
+		From("todos AS t").Where(sq.Eq{"t.id": id}).
+		InnerJoin("users AS u ON t.user_id = u.id").
+		PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return todo, err
 	}
+
+	log.Println(sql)
 
 	conn, err := r.conn.Acquire(ctx)
 	if err != nil {
@@ -49,12 +61,18 @@ func (r *todosRepository) Get(ctx context.Context, id string) (todo todos.Todo, 
 	defer conn.Release()
 
 	var (
-		authorId  string
+		author    users.User
+		roleID    int
 		deadline  pq.NullTime
 		updatedAt pq.NullTime
 	)
 
-	err = conn.QueryRow(ctx, sql, args...).Scan(&todo.ID, &authorId, &todo.Title, &todo.Body, &deadline, &todo.CreatedAt, &updatedAt)
+	err = conn.QueryRow(ctx, sql, args...).Scan(
+		&todo.ID, &author.ID, &author.Username,
+		&author.Email, &roleID, &author.CreatedAt,
+		&todo.Title, &todo.Body, &deadline,
+		&todo.CreatedAt, &updatedAt,
+	)
 	if err != nil {
 		return todo, err
 	}
@@ -65,8 +83,16 @@ func (r *todosRepository) Get(ctx context.Context, id string) (todo todos.Todo, 
 	if deadline.Valid {
 		todo.Deadline = deadline.Time
 	}
-	todo.Author = &users.User{ID: authorId}
+	author.Role = roleIds[roleID]
+	todo.Author = &author
 	return todo, nil
+}
+
+var sortingVariants = map[todos.SortBy]string{
+	todos.SortByCreationASC:  "created_at ASC",
+	todos.SortByCreationDESC: "created_at DESC",
+	todos.SortByDeadlineASC:  "deadline ASC",
+	todos.SortByDeadlineDESC: "deadline DESC",
 }
 
 func (r *todosRepository) GetAll(ctx context.Context, config todos.GetAllInput) ([]todos.Todo, error) {
@@ -76,15 +102,12 @@ func (r *todosRepository) GetAll(ctx context.Context, config todos.GetAllInput) 
 		Limit(uint64(config.PageSize)).
 		Offset(uint64(config.PageSize * config.Page))
 
-	switch config.SortBy {
-	case todos.SortByCreationASC:
-		query.OrderBy("created_at ASC")
-	case todos.SortByCreationDESC:
-		query.OrderBy("created_at DESC")
-	case todos.SortByDeadlineASC:
-		query.OrderBy("deadline ASC")
-	case todos.SortByDeadlineDESC:
-		query.OrderBy("deadline DESC")
+	if len(config.UserID) != 0 {
+		query.Where(sq.Eq{"user_id": config.UserID})
+	}
+
+	if sorting, ok := sortingVariants[config.SortBy]; ok {
+		query.OrderBy(sorting)
 	}
 
 	sql, args, err := query.PlaceholderFormat(sq.Dollar).ToSql()
@@ -138,14 +161,21 @@ func (r *todosRepository) GetAll(ctx context.Context, config todos.GetAllInput) 
 }
 
 func (r *todosRepository) Update(ctx context.Context, inp todos.UpdateInput) error {
-	sql, args, err := sq.
+	query := sq.
 		Update("todos").
-		Set("title", inp.Title).
-		Set("description", inp.Body).
-		Set("deadline", inp.Deadline).
-		Where(sq.Eq{"id": inp.ID}).
-		PlaceholderFormat(sq.Dollar).
-		ToSql()
+		Where(sq.Eq{"id": inp.ID})
+
+	if len(inp.Title) != 0 {
+		query.Set("title", inp.Title)
+	}
+	if len(inp.Body) != 0 {
+		query.Set("body", inp.Body)
+	}
+	if !inp.Deadline.IsZero() {
+		query.Set("deadline", inp.Deadline)
+	}
+
+	sql, args, err := query.PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return err
 	}

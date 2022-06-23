@@ -21,6 +21,7 @@ import (
 var (
 	flagConfigName     = flag.String("config", "", "This flag accepts a path to .env file. If not provided we will get our configs from enviorment variables or we will use default values.")
 	flagWithMigrations = flag.Bool("migrations", false, "If 'true' is given then migrations will be ran automaticaly on start of the app")
+	flagIsDevMode      = flag.Bool("isDev", false, "If 'true' all of our services will start in development mode. Our keys will live longer. And our logs will be more informative")
 )
 
 func main() {

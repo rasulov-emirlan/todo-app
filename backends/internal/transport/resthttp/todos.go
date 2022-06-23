@@ -1,6 +1,7 @@
 package resthttp
 
 import (
+	"context"
 	"errors"
 	"io"
 	"net/http"
@@ -9,7 +10,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/todos"
-	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
 )
 
 type (
@@ -30,14 +30,9 @@ type (
 )
 
 func (s *server) TodosCreate(ctx *gin.Context) {
-	user, ok := ctx.Get(usersInfoInContext)
-	if !ok {
-		panic("not implemented middleware")
-	}
-
-	userinfo, ok := user.(*users.JWTaccess)
-	if !ok {
-		respond(ctx, http.StatusBadRequest, nil, []string{ErrNoCredentials.Error()})
+	user, err := getUserData(ctx)
+	if err != nil {
+		respond(ctx, http.StatusUnauthorized, nil, []string{err.Error()})
 		return
 	}
 
@@ -51,8 +46,8 @@ func (s *server) TodosCreate(ctx *gin.Context) {
 		return
 	}
 
-	id, err := s.todosService.Create(ctx, todos.CreateInput{
-		UserID:   userinfo.ID,
+	id, err := s.todosService.Create(context.Background(), todos.CreateInput{
+		UserID:   user.ID,
 		Title:    req.Title,
 		Body:     req.Body,
 		Deadline: req.Deadline,
@@ -110,10 +105,22 @@ func (s *server) TodosGet(ctx *gin.Context) {
 		return
 	}
 
-	respond(ctx, http.StatusOK, todo, []string{err.Error()})
+	respond(ctx, http.StatusOK, todo, nil)
+}
+
+var sortVariants = map[string]todos.SortBy{
+	"creationASC":  todos.SortByCreationASC,
+	"creationDESC": todos.SortByCreationDESC,
+	"deadlineASC":  todos.SortByDeadlineASC,
+	"deadlineDESC": todos.SortByDeadlineDESC,
 }
 
 func (s *server) TodosGetAll(ctx *gin.Context) {
+	user, err := getUserData(ctx)
+	if err != nil {
+		respond(ctx, http.StatusUnauthorized, nil, []string{err.Error()})
+		return
+	}
 	pageSize := ctx.Query("pageSize")
 	page := ctx.Query("page")
 	onlyCompleted := ctx.Query("onlyCompleted")
@@ -145,14 +152,8 @@ func (s *server) TodosGetAll(ctx *gin.Context) {
 	}
 
 	fSortBy := todos.SortByCreationASC
-
-	switch sortBy {
-	case "creationDESC":
-		fSortBy = todos.SortByCreationDESC
-	case "deadlineASC":
-		fSortBy = todos.SortByDeadlineASC
-	case "deadlineDESC":
-		fSortBy = todos.SortByCreationDESC
+	if sorting, ok := sortVariants[sortBy]; ok {
+		fSortBy = sorting
 	}
 
 	fOnlyCompleted := false
@@ -161,6 +162,7 @@ func (s *server) TodosGetAll(ctx *gin.Context) {
 	}
 
 	t, err := s.todosService.GetAll(ctx, todos.GetAllInput{
+		UserID:            user.ID,
 		PageSize:          fPageSize,
 		Page:              fPage,
 		ShowOnlyCompleted: fOnlyCompleted,

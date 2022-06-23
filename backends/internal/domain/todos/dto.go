@@ -27,6 +27,7 @@ type (
 	SortBy uint
 
 	GetAllInput struct {
+		UserID            string `json:"userID"`
 		PageSize          int    `json:"pageSize"`
 		Page              int    `json:"page"`
 		ShowOnlyCompleted bool   `json:"showOnlyCompleted"`
