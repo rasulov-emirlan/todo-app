@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
-	"go.uber.org/zap"
+	"github.com/rasulov-emirlan/todo-app/backends/pkg/log"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -33,16 +34,16 @@ type (
 
 	service struct {
 		repo Repository
-		log  *zap.Logger
+		log  *log.Logger
 
 		secretKey []byte
 	}
 )
 
-func NewService(repo Repository, log *zap.Logger, secretKey []byte) Service {
+func NewService(repo Repository, logger *log.Logger, secretKey []byte) Service {
 	return &service{
 		repo:      repo,
-		log:       log,
+		log:       logger,
 		secretKey: secretKey,
 	}
 }

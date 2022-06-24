@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"go.uber.org/zap"
+	"github.com/rasulov-emirlan/todo-app/backends/pkg/log"
 )
 
 type (
@@ -33,14 +33,14 @@ type (
 
 	service struct {
 		repo Repository
-		log  *zap.Logger
+		log  *log.Logger
 	}
 )
 
-func NewService(repo Repository, log *zap.Logger) Service {
+func NewService(repo Repository, logger *log.Logger) Service {
 	return &service{
 		repo: repo,
-		log:  log,
+		log:  logger,
 	}
 }
 

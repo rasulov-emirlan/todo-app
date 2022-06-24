@@ -7,13 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/todos"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
-	"go.uber.org/zap"
+	"github.com/rasulov-emirlan/todo-app/backends/pkg/log"
 )
 
 type server struct {
 	router  *gin.Engine
 	address string
-	logger  *zap.Logger
+	logger  *log.Logger
 
 	usersService users.Service
 	todosService todos.Service
@@ -24,7 +24,7 @@ func NewServer(
 	address string,
 	rTimeout time.Duration,
 	wTimeout time.Duration,
-	logger *zap.Logger,
+	logger *log.Logger,
 	usersService users.Service,
 	todosService todos.Service,
 ) *server {

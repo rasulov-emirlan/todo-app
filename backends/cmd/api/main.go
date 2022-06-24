@@ -31,11 +31,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	logger := customLog.NewLogger(
-		customLog.ParseLevel(config.Log.Level),
+	logger, err := customLog.NewLogger(
+		config.Log.Level,
 		config.Log.Output,
 	)
-	defer logger.Sync()
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			log.Fatal(err)
+		}
+		if err := logger.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	log.Println("config:", config)
 	logger.Info("Logger initialized")
