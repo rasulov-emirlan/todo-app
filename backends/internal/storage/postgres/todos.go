@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"log"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -51,8 +50,6 @@ func (r *todosRepository) Get(ctx context.Context, id string) (todo todos.Todo, 
 	if err != nil {
 		return todo, err
 	}
-
-	log.Println(sql)
 
 	conn, err := r.conn.Acquire(ctx)
 	if err != nil {

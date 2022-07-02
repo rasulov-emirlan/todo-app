@@ -1,8 +1,50 @@
+// Package classification Todo App API
+//
+// the purpose of this application is to learn more about REST and swagger
+//
+// This should demonstrate how to write clean code in go
+// and communicate with it using http
+//
+// Terms Of Service:
+//
+// there are no TOS at this moment, use at your own risk we take no responsibility
+//
+//     Schemes: http, https
+//     BasePath: /api
+//     Version: 0.0.1
+//     License: MIT http://opensource.org/licenses/MIT
+//     Contact: Emirlan Rasulov<rasulov.emirlan@gmail.com> https://github.com/rasulov-emirlan
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//     - application/xml
+//
+//     Security:
+//     - Bearer: []
+//
+//	   securityDefinitions:
+//     Bearer:
+//       type: apiKey
+//       name: Authorization
+//       in: header
+//
+// swagger:meta
 package resthttp
+
+//go:generate swagger generate spec -o ./swaggerui/swagger.yaml --scan-models
+//go:generate swagger generate spec -o ./swaggerui/swagger.json --scan-models
 
 import (
 	"context"
+	"embed"
+	"io/fs"
 	"net/http"
+
+	"github.com/gin-contrib/cors"
+
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -43,23 +85,38 @@ func NewServer(
 }
 
 func (s *server) Run() error {
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	s.setRoutes(router)
 	s.server.Handler = router
 	return s.server.ListenAndServe()
 }
 
-func (s *server) setRoutes(router *gin.Engine) {
-	router.Use(gin.Recovery())
-	router.Use(func(ctx *gin.Context) {
-		// TODO: add cors handling
-	})
+//go:embed swaggerui
+var swagger embed.FS
 
-	router.GET("/ping", func(c *gin.Context) {
+func (s *server) setRoutes(router *gin.Engine) {
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowCredentials: true,
+		AllowMethods:     []string{"GET", "POST", "OPTIONS", "DELETE", "PATC", "PUT"},
+	}))
+	router.Use(gin.Recovery())
+	router.Use(gin.Logger())
+	api := router.Group("/api")
+	dir, err := fs.Sub(swagger, "swaggerui")
+	if err != nil {
+		s.logger.Fatal(err.Error())
+	}
+	api.StaticFS("/swagger", http.FS(dir))
+
+	api.GET("/ping", func(c *gin.Context) {
 		respond(c, http.StatusOK, gin.H{"message": "pong"}, nil)
 	})
 
-	usersGroup := router.Group("/users")
+	api.GET("/health", healthCheck, s.isAdmin)
+
+	usersGroup := api.Group("/users")
 	{
 		// TODO: separate users logic and auth
 		usersGroup.POST("/auth/signup", s.UsersSignUp)
@@ -70,7 +127,7 @@ func (s *server) setRoutes(router *gin.Engine) {
 		usersGroup.DELETE("/:id", s.UsersDelete, s.isAdmin, s.requireAuth)
 	}
 
-	todosGroup := router.Group("/todos", s.requireAuth)
+	todosGroup := api.Group("/todos", s.requireAuth)
 	{
 		todosGroup.POST("", s.TodosCreate)
 		todosGroup.GET("/:id", s.TodosGet)

@@ -13,22 +13,74 @@ import (
 )
 
 type (
+	// This is a model used for creating todos and only for that
+	// swagger:model
 	reqTodosCreate struct {
-		Title    string    `json:"title"`
-		Body     string    `json:"body"`
+		// required: true
+		// example: Do dishes tomorrow
+		// min length: 6
+		// max length: 100
+		Title string `json:"title"`
+
+		// max length: 2000
+		Body string `json:"body"`
+
+		// example: 2022-06-23T22:16:50.782647Z
 		Deadline time.Time `json:"deadline"`
 	}
+
+	// This is an id of a newly created todo.
+	// swagger:model
 	respTodosCreate struct {
 		ID string `json:"id"`
 	}
 
+	// This is info needed for updating a todo. Its 100% identical to reqTodosCreate
+	// swagger:model
 	reqTodosUpdate struct {
-		Title    string    `json:"title"`
-		Body     string    `json:"body"`
+		// required: true
+		// example: Do dishes tomorrow
+		// min length: 6
+		// max length: 100
+		Title string `json:"title"`
+
+		// max length: 2000
+		Body string `json:"body"`
+
+		// example: 2022-06-23T22:16:50.782647Z
 		Deadline time.Time `json:"deadline"`
 	}
 )
 
+// swagger:route POST /todos auth UsersSignUp
+//
+// Sign up a user
+//
+// This will create a user in our database IF AND ONLY
+// if he doesnt exist yet. After creating him it will automaticaly
+// sign him in
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//
+//     Schemes: http, https
+//
+//     Deprecated: false
+//
+//     Parameters:
+//       + name: user info
+//         in: body
+//         description: Basic info for user to sign up
+//         required: true
+//         type: reqUsersSignUp
+//
+//     Responses:
+//       default: usersKeys
+//       200: usersKeys
+//       422: stdResponse
 func (s *server) TodosCreate(ctx *gin.Context) {
 	user, err := getUserData(ctx)
 	if err != nil {
