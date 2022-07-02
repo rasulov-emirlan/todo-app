@@ -114,7 +114,7 @@ func (s *server) setRoutes(router *gin.Engine) {
 		respond(c, http.StatusOK, gin.H{"message": "pong"}, nil)
 	})
 
-	api.GET("/health", healthCheck, s.isAdmin)
+	api.GET("/health", s.requireAuth, s.isAdmin, healthCheck)
 
 	usersGroup := api.Group("/users")
 	{
@@ -124,7 +124,7 @@ func (s *server) setRoutes(router *gin.Engine) {
 		usersGroup.POST("/auth/refresh", s.UsersRefresh)
 		usersGroup.DELETE("/auth/logout", s.UsersLogout)
 
-		usersGroup.DELETE("/:id", s.UsersDelete, s.isAdmin, s.requireAuth)
+		usersGroup.DELETE("/:id", s.requireAuth, s.isAdmin, s.UsersDelete)
 	}
 
 	todosGroup := api.Group("/todos", s.requireAuth)

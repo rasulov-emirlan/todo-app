@@ -10,7 +10,7 @@ const (
 	accessLifeTime  = time.Minute * 10
 	refreshLifeTime = time.Hour * 24 * 7
 
-	RoleAdmin Role = iota
+	RoleAdmin Role = iota - 1
 	RoleUser
 )
 

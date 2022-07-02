@@ -18,8 +18,8 @@ type usersRepository struct {
 
 func (r *usersRepository) Create(ctx context.Context, email, hashedPassword, username string) (id string, err error) {
 	sql, args, err := sq.Insert("users").Columns(
-		"email", "password", "username", "created_at", "updated_at").
-		Values(email, hashedPassword, username, time.Now(), time.Now()).
+		"email", "password", "role_id", "username", "created_at", "updated_at").
+		Values(email, hashedPassword, 2, username, time.Now(), time.Now()).
 		Suffix("RETURNING id").
 		PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
