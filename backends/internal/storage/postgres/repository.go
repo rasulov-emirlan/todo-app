@@ -2,21 +2,20 @@ package postgres
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/storage/postgres/migrations"
 )
 
-type repository struct {
+type Repository struct {
 	conn *pgxpool.Pool
 
 	usersRepository *usersRepository
 	todosRepository *todosRepository
 }
 
-func NewRepository(url string, withMigrations bool) (*repository, error) {
+func NewRepository(url string, withMigrations bool) (*Repository, error) {
 	conn, err := pgxpool.Connect(context.Background(), url)
 	if err != nil {
 		for i := 0; i < 60; i++ {
@@ -34,27 +33,30 @@ func NewRepository(url string, withMigrations bool) (*repository, error) {
 		return nil, err
 	}
 	if withMigrations {
-		log.Println("Dfsfdfsdf")
 		if err := migrations.Up(url); err != nil {
 			return nil, err
 		}
 	}
-	return &repository{
+	return &Repository{
 		conn:            conn,
 		usersRepository: &usersRepository{conn},
 		todosRepository: &todosRepository{conn},
 	}, nil
 }
 
-func (r *repository) Close() error {
+func (r *Repository) Close() error {
 	r.conn.Close()
 	return nil
 }
 
-func (r *repository) Users() *usersRepository {
+func (r *Repository) Users() *usersRepository {
 	return r.usersRepository
 }
 
-func (r *repository) Todos() *todosRepository {
+func (r *Repository) Todos() *todosRepository {
 	return r.todosRepository
+}
+
+func (r *Repository) Ping() error {
+	return r.conn.Ping(context.Background())
 }

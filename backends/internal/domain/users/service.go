@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/mail"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -59,6 +60,7 @@ func (s *service) SignUp(ctx context.Context, email, password, username string) 
 	if err != nil {
 		return SignInOutput{}, ErrInvalidEmail
 	}
+	email = strings.ToLower(email)
 	passwordHash, err := hashPassword(password)
 	if err != nil {
 		return SignInOutput{}, err
