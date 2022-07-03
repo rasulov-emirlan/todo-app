@@ -60,10 +60,13 @@ func main() {
 
 	logger.Info("Store initialized")
 
-	usersService := users.NewService(
+	usersService, err := users.NewService(
 		store.Users(),
 		logger,
 		[]byte(config.JWTsecret))
+	if err != nil {
+		logger.Fatal("Could not initialize usersService", customLog.String("error", err.Error()))
+	}
 	todosService := todos.NewService(
 		store.Todos(),
 		store.Users(),

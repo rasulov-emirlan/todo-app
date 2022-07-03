@@ -3,6 +3,12 @@ package users
 import "github.com/golang-jwt/jwt"
 
 type (
+	SignUpInput struct {
+		Username string `validate:"required,username"`
+		Email    string `validate:"required,email"`
+		Password string `validate:"required,password"`
+	}
+
 	UpdateInput struct {
 		ID       string
 		Username string

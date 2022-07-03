@@ -3,11 +3,16 @@ package users
 import (
 	"context"
 	"errors"
-	"net/mail"
 	"strings"
 	"time"
 
+	"github.com/go-playground/locales/en"
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
+	en_translations "github.com/go-playground/validator/v10/translations/en"
+
 	"github.com/golang-jwt/jwt"
+
 	"github.com/rasulov-emirlan/todo-app/backends/pkg/log"
 
 	"golang.org/x/crypto/bcrypt"
@@ -23,7 +28,7 @@ type (
 	}
 
 	Service interface {
-		SignUp(ctx context.Context, email, password, username string) (SignInOutput, error)
+		SignUp(ctx context.Context, inp SignUpInput) (SignInOutput, error)
 		SignIn(ctx context.Context, email, password string) (SignInOutput, error)
 
 		UnpackAccessKey(ctx context.Context, accessKey string) (JWTaccess, error)
@@ -31,46 +36,110 @@ type (
 
 		Update(ctx context.Context, inp UpdateInput) error
 		Delete(ctx context.Context, id string) error
+
+		UnpackValidationErrors(err error) []string
 	}
 
 	service struct {
-		repo Repository
-		log  *log.Logger
+		repo       Repository
+		validation *validator.Validate
+		trans      ut.Translator
+		log        *log.Logger
 
 		secretKey []byte
 	}
 )
 
-func NewService(repo Repository, logger *log.Logger, secretKey []byte) Service {
-	return &service{
-		repo:      repo,
-		log:       logger,
-		secretKey: secretKey,
+func NewService(repo Repository, logger *log.Logger, secretKey []byte) (Service, error) {
+	en := en.New()
+	uni := ut.New(en, en)
+
+	trans, _ := uni.GetTranslator("en")
+	v := validator.New()
+	en_translations.RegisterDefaultTranslations(v, trans)
+
+	err := v.RegisterTranslation("password", trans,
+		func(ut ut.Translator) error {
+			return ut.Add("password", "{0} can't be shorter than 6 characters or longer then 128", true)
+		},
+		func(ut ut.Translator, fe validator.FieldError) string {
+			t, err := ut.T("password", fe.Field())
+			if err != nil {
+				logger.Fatal("Could not initialize users serivice", log.String("error", err.Error()))
+			}
+			return t
+		},
+	)
+	if err != nil {
+		return nil, err
 	}
+	err = v.RegisterTranslation("username", trans,
+		func(ut ut.Translator) error {
+			return ut.Add("username", "{0} can't be shorter than 6 characters or longer then 20", true)
+		},
+		func(ut ut.Translator, fe validator.FieldError) string {
+			t, err := ut.T("username", fe.Field())
+			if err != nil {
+				logger.Fatal("Could not initialize users serivice", log.String("error", err.Error()))
+			}
+			return t
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.RegisterValidation("password", func(fl validator.FieldLevel) bool {
+		l := len(fl.Field().String())
+		return l >= 6 && l <= 128
+	})
+	if err != nil {
+		return nil, err
+	}
+	err = v.RegisterValidation("username", func(fl validator.FieldLevel) bool {
+		l := len(fl.Field().String())
+		return l >= 6 && l <= 20
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &service{
+		repo:       repo,
+		log:        logger,
+		validation: v,
+		trans:      trans,
+		secretKey:  secretKey,
+	}, nil
 }
 
-func (s *service) SignUp(ctx context.Context, email, password, username string) (SignInOutput, error) {
-	if l := len(password); l < 6 || l > 128 {
-		return SignInOutput{}, ErrInvalidPassword
+func (s *service) UnpackValidationErrors(err error) []string {
+	v, ok := err.(validator.ValidationErrors)
+	if !ok {
+		return nil
 	}
-	if l := len(username); l < 6 || l > 20 {
-		return SignInOutput{}, ErrInvalidUsername
+	errs := make([]string, 0, len(v))
+	for _, vv := range v {
+		errs = append(errs, vv.Translate(s.trans))
 	}
-	_, err := mail.ParseAddress(email)
-	if err != nil {
-		return SignInOutput{}, ErrInvalidEmail
+	return errs
+}
+
+func (s *service) SignUp(ctx context.Context, inp SignUpInput) (SignInOutput, error) {
+	if err := s.validation.Struct(inp); err != nil {
+		return SignInOutput{}, err
 	}
-	email = strings.ToLower(email)
-	passwordHash, err := hashPassword(password)
+	inp.Email = strings.ToLower(inp.Email)
+	passwordHash, err := hashPassword(inp.Password)
 	if err != nil {
 		return SignInOutput{}, err
 	}
-	_, err = s.repo.Create(ctx, email, passwordHash, username)
+	_, err = s.repo.Create(ctx, inp.Email, passwordHash, inp.Username)
 	if err != nil {
 		return SignInOutput{}, err
 	}
 
-	return s.SignIn(ctx, email, password)
+	return s.SignIn(ctx, inp.Email, inp.Password)
 }
 
 func (s *service) SignIn(ctx context.Context, email, password string) (SignInOutput, error) {

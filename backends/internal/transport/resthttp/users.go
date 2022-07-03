@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
 )
 
 type (
@@ -144,16 +145,23 @@ func (s *server) UsersSignUp(ctx *gin.Context) {
 
 	out, err := s.usersService.SignUp(
 		ctx,
-		inp.Email,
-		inp.Password,
-		inp.Username,
+		users.SignUpInput{
+			Email:    inp.Email,
+			Username: inp.Username,
+			Password: inp.Password,
+		},
 	)
 	if err != nil {
+		errs := s.usersService.UnpackValidationErrors(err)
+		resp := []string{err.Error()}
+		if errs != nil {
+			resp = errs
+		}
 		respond(
 			ctx,
 			http.StatusInternalServerError,
 			nil,
-			[]string{err.Error()},
+			resp,
 		)
 		return
 	}

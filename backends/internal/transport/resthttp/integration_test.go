@@ -42,7 +42,10 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	uService := users.NewService(store.Users(), logger, []byte("secretkey"))
+	uService, err := users.NewService(store.Users(), logger, []byte("secretkey"))
+	if err != nil {
+		log.Fatal(err)
+	}
 	tService := todos.NewService(store.Todos(), store.Users(), logger)
 	srvr := resthttp.NewServer(
 		[]string{"*"}, ":8080", time.Second*15, time.Second*15, logger, uService, tService)
