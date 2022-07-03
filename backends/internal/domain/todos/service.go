@@ -30,6 +30,9 @@ type (
 		GetAll(ctx context.Context, config GetAllInput) (todos []Todo, err error)
 		// Will not update fields that are empty in UpdateInput.
 		// But ID is required
+
+		// userID represents a user that calls this service.
+		// With that id we determine if user is allowed to use this service.
 		Update(ctx context.Context, userID string, inp UpdateInput) error
 		MarkAsComplete(ctx context.Context, userID, id string) error
 		MarkAsNotComplete(ctx context.Context, userID, id string) error

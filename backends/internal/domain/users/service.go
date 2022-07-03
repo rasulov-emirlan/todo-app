@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	// TODO: do something with all these imports
+	// maybe create a wrapper for validation, jwt creation and hashing
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"

@@ -44,7 +44,6 @@ func main() {
 		}
 	}()
 
-	log.Println("config:", config)
 	logger.Info("Logger initialized")
 
 	url := url.URL{
