@@ -302,6 +302,10 @@ definitions:
     title: A MemStats records statistics about the memory allocator.
     type: object
     x-go-package: runtime
+  Role:
+    format: uint64
+    type: integer
+    x-go-package: github.com/rasulov-emirlan/todo-app/backends/internal/domain/users
   healthCheckResponse:
     description: This is all info we could get about this servers process
     properties:
@@ -313,7 +317,9 @@ definitions:
     type: object
     x-go-package: github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp
   reqTodosCreate:
-    description: This is a model used for creating todos and only for that
+    description: |-
+      reqTodosCreate
+      This is a model used for creating todos and only for that
     properties:
       body:
         maxLength: 2000
@@ -417,11 +423,13 @@ definitions:
     type: object
     x-go-package: github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp
   respTodosCreate:
+    description: |-
+      respTodosCreate
+      This is an id of a newly created todo.
     properties:
       id:
         type: string
         x-go-name: ID
-    title: This is an id of a newly created todo.
     type: object
     x-go-package: github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp
   stdResponse:
@@ -443,6 +451,67 @@ definitions:
     - errors
     - data
     type: object
+    x-go-package: github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp
+  todo:
+    description: |-
+      todo
+      This is the actual model of a todo
+    properties:
+      author:
+        properties:
+          createdAt:
+            format: date-time
+            type: string
+            x-go-name: CreatedAt
+          email:
+            type: string
+            x-go-name: Email
+          id:
+            description: |-
+              type: string
+              format: uuid
+            type: string
+            x-go-name: ID
+          role:
+            $ref: '#/definitions/Role'
+          updatedAt:
+            format: date-time
+            type: string
+            x-go-name: UpdatedAt
+          username:
+            type: string
+            x-go-name: Username
+        type: object
+        x-go-name: Author
+      body:
+        type: string
+        x-go-name: Body
+      completed:
+        type: boolean
+        x-go-name: Completed
+      createdAt:
+        format: date-time
+        type: string
+        x-go-name: CreatedAt
+      deadline:
+        format: date-time
+        type: string
+        x-go-name: Deadline
+      id:
+        description: |-
+          type: string
+          format: uuid
+        type: string
+        x-go-name: ID
+      title:
+        type: string
+        x-go-name: Title
+      updatedAt:
+        format: date-time
+        type: string
+        x-go-name: UpdatedAt
+    type: object
+    x-go-name: _
     x-go-package: github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp
 info:
   contact:
@@ -482,40 +551,268 @@ paths:
       tags:
       - healthcheck
   /todos:
+    get:
+      consumes:
+      - application/json
+      description: This will return a list of your todos
+      operationId: TodosGetAll
+      parameters:
+      - description: Number of todos to get
+        in: query
+        name: pageSize
+        type: integer
+      - in: query
+        name: page
+        type: integer
+      - description: If true we will return only completed ones
+        in: query
+        name: onlyCompleted
+        type: boolean
+      - description: 'How to sort it. Variations: [deadlineDESC, deadlineASC, creationDESC,
+          creationASC]'
+        in: query
+        name: sortBy
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: todo
+          schema:
+            items:
+              $ref: '#/definitions/todo'
+            type: array
+        "400":
+          description: stdResponse
+          schema:
+            $ref: '#/definitions/stdResponse'
+        "422":
+          description: stdResponse
+          schema:
+            $ref: '#/definitions/stdResponse'
+      schemes:
+      - http
+      - https
+      security:
+      - Bearer:
+        - '[]'
+      summary: Get all todos
+      tags:
+      - todo
     post:
       consumes:
       - application/json
       description: |-
-        This will create a user in our database IF AND ONLY
-        if he doesnt exist yet. After creating him it will automaticaly
-        sign him in
-      operationId: UsersSignUp
+        This will create a todo. It will use Bearer token to identify
+        caller of this endpoint and will use his identity as author of that todo
+      operationId: TodosCreate
       parameters:
-      - description: Basic info for user to sign up
+      - description: Basic info for a todo
         in: body
-        name: user info
+        name: todo info
         required: true
         schema:
-          $ref: '#/definitions/reqUsersSignUp'
-          description: Basic info for user to sign up
+          $ref: '#/definitions/reqTodosCreate'
+          description: Basic info for a todo
           type: object
       produces:
       - application/json
       responses:
         "200":
-          $ref: '#/responses/usersKeys'
+          description: respTodosCreate
+          schema:
+            $ref: '#/definitions/respTodosCreate'
+        "400":
+          description: stdResponse
+          schema:
+            $ref: '#/definitions/stdResponse'
         "422":
           description: stdResponse
           schema:
             $ref: '#/definitions/stdResponse'
         default:
-          $ref: '#/responses/usersKeys'
+          description: respTodosCreate
+          schema:
+            $ref: '#/definitions/respTodosCreate'
       schemes:
       - http
       - https
-      summary: Sign up a user
+      security:
+      - Bearer:
+        - '[]'
+      summary: Create a todo
       tags:
-      - auth
+      - todo
+  /todos/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: This will delete a todo forever
+      operationId: TodosDelete
+      parameters:
+      - description: Id for the todo
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "400":
+          description: stdResponse
+          schema:
+            $ref: '#/definitions/stdResponse'
+        "422":
+          description: stdResponse
+          schema:
+            $ref: '#/definitions/stdResponse'
+      schemes:
+      - http
+      - https
+      security:
+      - Bearer:
+        - '[]'
+      summary: Delete a todo
+      tags:
+      - todo
+    patch:
+      consumes:
+      - application/json
+      description: This will update a todo.
+      operationId: TodosUpdate
+      parameters:
+      - description: Basic info for a todo
+        in: body
+        name: todo info
+        required: true
+        schema:
+          $ref: '#/definitions/reqTodosUpdate'
+          description: Basic info for a todo
+          type: object
+      - description: Id of the todo you wish to update
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: stdResponse
+          schema:
+            $ref: '#/definitions/stdResponse'
+        "400":
+          description: stdResponse
+          schema:
+            $ref: '#/definitions/stdResponse'
+        "422":
+          description: stdResponse
+          schema:
+            $ref: '#/definitions/stdResponse'
+      schemes:
+      - http
+      - https
+      security:
+      - Bearer:
+        - '[]'
+      summary: Update a todo
+      tags:
+      - todo
+  /todos/{id}/complete:
+    put:
+      consumes:
+      - application/json
+      description: This will mark a todo as complete
+      operationId: TodosMakrAsComplete
+      parameters:
+      - description: Id for the todo
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "400":
+          description: stdResponse
+          schema:
+            $ref: '#/definitions/stdResponse'
+        "422":
+          description: stdResponse
+          schema:
+            $ref: '#/definitions/stdResponse'
+      schemes:
+      - http
+      - https
+      security:
+      - Bearer:
+        - '[]'
+      summary: Mark as complete
+      tags:
+      - todo
+  /todos/{id}/incomplete:
+    put:
+      consumes:
+      - application/json
+      description: This will mark a todo as incomplete
+      operationId: TodosMakrAsNotComplete
+      parameters:
+      - description: Id for the todo
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "400":
+          description: stdResponse
+          schema:
+            $ref: '#/definitions/stdResponse'
+        "422":
+          description: stdResponse
+          schema:
+            $ref: '#/definitions/stdResponse'
+      schemes:
+      - http
+      - https
+      security:
+      - Bearer:
+        - '[]'
+      summary: Mark as incomplete
+      tags:
+      - todo
+  /todos{id}:
+    get:
+      consumes:
+      - application/json
+      description: This will return a todo
+      operationId: TodosGet
+      parameters:
+      - description: Id of the todo you wish to update
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: todo
+          schema:
+            $ref: '#/definitions/todo'
+        "400":
+          description: stdResponse
+          schema:
+            $ref: '#/definitions/stdResponse'
+        "422":
+          description: stdResponse
+          schema:
+            $ref: '#/definitions/stdResponse'
+      schemes:
+      - http
+      - https
+      security:
+      - Bearer:
+        - '[]'
+      summary: Get a todo
+      tags:
+      - todo
   /users/auth/logout:
     delete:
       consumes:
@@ -662,7 +959,7 @@ security:
   - '[]'
 securityDefinitions:
   Bearer:
-    in: header
+    in: Header
     name: Authorization
     type: apiKey
 swagger: "2.0"

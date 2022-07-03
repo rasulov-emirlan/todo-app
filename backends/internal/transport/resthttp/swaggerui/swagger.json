@@ -57,8 +57,15 @@
       }
     },
     "/todos": {
-      "post": {
-        "description": "This will create a user in our database IF AND ONLY\nif he doesnt exist yet. After creating him it will automaticaly\nsign him in",
+      "get": {
+        "security": [
+          {
+            "Bearer": [
+              "[]"
+            ]
+          }
+        ],
+        "description": "This will return a list of your todos",
         "consumes": [
           "application/json"
         ],
@@ -70,26 +77,108 @@
           "https"
         ],
         "tags": [
-          "auth"
+          "todo"
         ],
-        "summary": "Sign up a user",
-        "operationId": "UsersSignUp",
+        "summary": "Get all todos",
+        "operationId": "TodosGetAll",
         "parameters": [
           {
-            "description": "Basic info for user to sign up",
-            "name": "user info",
+            "type": "integer",
+            "description": "Number of todos to get",
+            "name": "pageSize",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "boolean",
+            "description": "If true we will return only completed ones",
+            "name": "onlyCompleted",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "How to sort it. Variations: [deadlineDESC, deadlineASC, creationDESC, creationASC]",
+            "name": "sortBy",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "todo",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/todo"
+              }
+            }
+          },
+          "400": {
+            "description": "stdResponse",
+            "schema": {
+              "$ref": "#/definitions/stdResponse"
+            }
+          },
+          "422": {
+            "description": "stdResponse",
+            "schema": {
+              "$ref": "#/definitions/stdResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": [
+              "[]"
+            ]
+          }
+        ],
+        "description": "This will create a todo. It will use Bearer token to identify\ncaller of this endpoint and will use his identity as author of that todo",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "todo"
+        ],
+        "summary": "Create a todo",
+        "operationId": "TodosCreate",
+        "parameters": [
+          {
+            "description": "Basic info for a todo",
+            "name": "todo info",
             "in": "body",
             "required": true,
             "schema": {
-              "description": "Basic info for user to sign up",
+              "description": "Basic info for a todo",
               "type": "object",
-              "$ref": "#/definitions/reqUsersSignUp"
+              "$ref": "#/definitions/reqTodosCreate"
             }
           }
         ],
         "responses": {
           "200": {
-            "$ref": "#/responses/usersKeys"
+            "description": "respTodosCreate",
+            "schema": {
+              "$ref": "#/definitions/respTodosCreate"
+            }
+          },
+          "400": {
+            "description": "stdResponse",
+            "schema": {
+              "$ref": "#/definitions/stdResponse"
+            }
           },
           "422": {
             "description": "stdResponse",
@@ -98,7 +187,276 @@
             }
           },
           "default": {
-            "$ref": "#/responses/usersKeys"
+            "description": "respTodosCreate",
+            "schema": {
+              "$ref": "#/definitions/respTodosCreate"
+            }
+          }
+        }
+      }
+    },
+    "/todos/{id}": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": [
+              "[]"
+            ]
+          }
+        ],
+        "description": "This will delete a todo forever",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "todo"
+        ],
+        "summary": "Delete a todo",
+        "operationId": "TodosDelete",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Id for the todo",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "stdResponse",
+            "schema": {
+              "$ref": "#/definitions/stdResponse"
+            }
+          },
+          "422": {
+            "description": "stdResponse",
+            "schema": {
+              "$ref": "#/definitions/stdResponse"
+            }
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "Bearer": [
+              "[]"
+            ]
+          }
+        ],
+        "description": "This will update a todo.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "todo"
+        ],
+        "summary": "Update a todo",
+        "operationId": "TodosUpdate",
+        "parameters": [
+          {
+            "description": "Basic info for a todo",
+            "name": "todo info",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "Basic info for a todo",
+              "type": "object",
+              "$ref": "#/definitions/reqTodosUpdate"
+            }
+          },
+          {
+            "type": "string",
+            "description": "Id of the todo you wish to update",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "stdResponse",
+            "schema": {
+              "$ref": "#/definitions/stdResponse"
+            }
+          },
+          "400": {
+            "description": "stdResponse",
+            "schema": {
+              "$ref": "#/definitions/stdResponse"
+            }
+          },
+          "422": {
+            "description": "stdResponse",
+            "schema": {
+              "$ref": "#/definitions/stdResponse"
+            }
+          }
+        }
+      }
+    },
+    "/todos/{id}/complete": {
+      "put": {
+        "security": [
+          {
+            "Bearer": [
+              "[]"
+            ]
+          }
+        ],
+        "description": "This will mark a todo as complete",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "todo"
+        ],
+        "summary": "Mark as complete",
+        "operationId": "TodosMakrAsComplete",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Id for the todo",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "stdResponse",
+            "schema": {
+              "$ref": "#/definitions/stdResponse"
+            }
+          },
+          "422": {
+            "description": "stdResponse",
+            "schema": {
+              "$ref": "#/definitions/stdResponse"
+            }
+          }
+        }
+      }
+    },
+    "/todos/{id}/incomplete": {
+      "put": {
+        "security": [
+          {
+            "Bearer": [
+              "[]"
+            ]
+          }
+        ],
+        "description": "This will mark a todo as incomplete",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "todo"
+        ],
+        "summary": "Mark as incomplete",
+        "operationId": "TodosMakrAsNotComplete",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Id for the todo",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "stdResponse",
+            "schema": {
+              "$ref": "#/definitions/stdResponse"
+            }
+          },
+          "422": {
+            "description": "stdResponse",
+            "schema": {
+              "$ref": "#/definitions/stdResponse"
+            }
+          }
+        }
+      }
+    },
+    "/todos{id}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": [
+              "[]"
+            ]
+          }
+        ],
+        "description": "This will return a todo",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "todo"
+        ],
+        "summary": "Get a todo",
+        "operationId": "TodosGet",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Id of the todo you wish to update",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "todo",
+            "schema": {
+              "$ref": "#/definitions/todo"
+            }
+          },
+          "400": {
+            "description": "stdResponse",
+            "schema": {
+              "$ref": "#/definitions/stdResponse"
+            }
+          },
+          "422": {
+            "description": "stdResponse",
+            "schema": {
+              "$ref": "#/definitions/stdResponse"
+            }
           }
         }
       }
@@ -468,6 +826,11 @@
       },
       "x-go-package": "runtime"
     },
+    "Role": {
+      "type": "integer",
+      "format": "uint64",
+      "x-go-package": "github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
+    },
     "healthCheckResponse": {
       "description": "This is all info we could get about this servers process",
       "type": "object",
@@ -483,7 +846,7 @@
       "x-go-package": "github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp"
     },
     "reqTodosCreate": {
-      "description": "This is a model used for creating todos and only for that",
+      "description": "reqTodosCreate\nThis is a model used for creating todos and only for that",
       "type": "object",
       "required": [
         "title"
@@ -607,8 +970,8 @@
       "x-go-package": "github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp"
     },
     "respTodosCreate": {
+      "description": "respTodosCreate\nThis is an id of a newly created todo.",
       "type": "object",
-      "title": "This is an id of a newly created todo.",
       "properties": {
         "id": {
           "type": "string",
@@ -639,6 +1002,78 @@
         }
       },
       "x-go-package": "github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp"
+    },
+    "todo": {
+      "description": "todo\nThis is the actual model of a todo",
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "object",
+          "properties": {
+            "createdAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-go-name": "CreatedAt"
+            },
+            "email": {
+              "type": "string",
+              "x-go-name": "Email"
+            },
+            "id": {
+              "description": "type: string\nformat: uuid",
+              "type": "string",
+              "x-go-name": "ID"
+            },
+            "role": {
+              "$ref": "#/definitions/Role"
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time",
+              "x-go-name": "UpdatedAt"
+            },
+            "username": {
+              "type": "string",
+              "x-go-name": "Username"
+            }
+          },
+          "x-go-name": "Author"
+        },
+        "body": {
+          "type": "string",
+          "x-go-name": "Body"
+        },
+        "completed": {
+          "type": "boolean",
+          "x-go-name": "Completed"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "CreatedAt"
+        },
+        "deadline": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "Deadline"
+        },
+        "id": {
+          "description": "type: string\nformat: uuid",
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "title": {
+          "type": "string",
+          "x-go-name": "Title"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "UpdatedAt"
+        }
+      },
+      "x-go-name": "_",
+      "x-go-package": "github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp"
     }
   },
   "responses": {
@@ -656,7 +1091,7 @@
     "Bearer": {
       "type": "apiKey",
       "name": "Authorization",
-      "in": "header"
+      "in": "Header"
     }
   },
   "security": [

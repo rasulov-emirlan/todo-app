@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -20,6 +21,7 @@ func NewRepository(url string, withMigrations bool) (*Repository, error) {
 	if err != nil {
 		for i := 0; i < 60; i++ {
 			time.Sleep(time.Second)
+			log.Println("Trying to connect to database at url:", url)
 			conn, err = pgxpool.Connect(context.Background(), url)
 			if err == nil {
 				break

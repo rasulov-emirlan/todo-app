@@ -26,10 +26,10 @@
 //     - Bearer: []
 //
 //	   securityDefinitions:
-//     Bearer:
-//       type: apiKey
-//       name: Authorization
-//       in: header
+//       Bearer:
+//         type: apiKey
+//         in: Header
+//         name: Authorization
 //
 // swagger:meta
 package resthttp
@@ -42,12 +42,12 @@ import (
 	"embed"
 	"io/fs"
 	"net/http"
-
-	"github.com/gin-contrib/cors"
-
 	"time"
 
+	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
+
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/todos"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
 	"github.com/rasulov-emirlan/todo-app/backends/pkg/log"
@@ -103,6 +103,7 @@ func (s *server) setRoutes(router *gin.Engine) {
 	}))
 	router.Use(gin.Recovery())
 	router.Use(gin.Logger())
+	router.Use(gzip.Gzip(gzip.BestCompression))
 	api := router.Group("/api")
 	dir, err := fs.Sub(swagger, "swaggerui")
 	if err != nil {
@@ -133,6 +134,9 @@ func (s *server) setRoutes(router *gin.Engine) {
 		todosGroup.GET("/:id", s.TodosGet)
 		todosGroup.GET("", s.TodosGetAll)
 		todosGroup.PATCH("/:id", s.TodosUpdate)
+		todosGroup.PUT("/:id/complete", s.TodosMarkComplete)
+		todosGroup.PUT("/:id/incomplete", s.TodosMarkNotComplete)
+
 		todosGroup.DELETE("/:id", s.TodosDelete)
 	}
 }

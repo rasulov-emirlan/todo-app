@@ -10,9 +10,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/todos"
+	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
 )
 
 type (
+	// reqTodosCreate
 	// This is a model used for creating todos and only for that
 	// swagger:model
 	reqTodosCreate struct {
@@ -29,6 +31,7 @@ type (
 		Deadline time.Time `json:"deadline"`
 	}
 
+	// respTodosCreate
 	// This is an id of a newly created todo.
 	// swagger:model
 	respTodosCreate struct {
@@ -50,15 +53,50 @@ type (
 		// example: 2022-06-23T22:16:50.782647Z
 		Deadline time.Time `json:"deadline"`
 	}
+
+	// todo
+	// This is the actual model of a todo
+	// swagger:model todo
+	_ struct {
+		// type: string
+		// format: uuid
+		ID string `json:"id"`
+
+		Author *struct {
+			// type: string
+			// format: uuid
+			ID           string `json:"id"`
+			Username     string `json:"username"`
+			Email        string `json:"email"`
+			PasswordHash string `json:"-"`
+
+			// Unknown: 0
+			// Admin: 1
+			// User: 2
+			// type: int
+			Role users.Role `json:"role"`
+
+			CreatedAt time.Time `json:"createdAt"`
+			UpdatedAt time.Time `json:"updatedAt"`
+		} `json:"author,omitempty"`
+
+		Title string `json:"title"`
+		Body  string `json:"body"`
+
+		Completed bool      `json:"completed"`
+		Deadline  time.Time `json:"deadline"`
+
+		CreatedAt time.Time `json:"createdAt"`
+		UpdatedAt time.Time `json:"updatedAt"`
+	}
 )
 
-// swagger:route POST /todos auth UsersSignUp
+// swagger:route POST /todos todo TodosCreate
 //
-// Sign up a user
+// Create a todo
 //
-// This will create a user in our database IF AND ONLY
-// if he doesnt exist yet. After creating him it will automaticaly
-// sign him in
+// This will create a todo. It will use Bearer token to identify
+// caller of this endpoint and will use his identity as author of that todo
 //
 //     Consumes:
 //     - application/json
@@ -70,16 +108,20 @@ type (
 //
 //     Deprecated: false
 //
+//     Security:
+//      - Bearer: []
+//
 //     Parameters:
-//       + name: user info
+//       + name: todo info
 //         in: body
-//         description: Basic info for user to sign up
+//         description: Basic info for a todo
 //         required: true
-//         type: reqUsersSignUp
+//         type: reqTodosCreate
 //
 //     Responses:
-//       default: usersKeys
-//       200: usersKeys
+//       default: respTodosCreate
+//       200: respTodosCreate
+//       400: stdResponse
 //       422: stdResponse
 func (s *server) TodosCreate(ctx *gin.Context) {
 	user, err := getUserData(ctx)
@@ -114,6 +156,42 @@ func (s *server) TodosCreate(ctx *gin.Context) {
 	}, nil)
 }
 
+// swagger:route PATCH /todos/{id} todo TodosUpdate
+//
+// Update a todo
+//
+// This will update a todo.
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//
+//     Schemes: http, https
+//
+//     Deprecated: false
+//
+//     Security:
+//      - Bearer: []
+//
+//     Parameters:
+//       + name: todo info
+//         in: body
+//         description: Basic info for a todo
+//         required: true
+//         type: reqTodosUpdate
+//       + name: id
+//         in: params
+//         required: true
+//         description: Id of the todo you wish to update
+//         type: string
+//         example: '89cd8496-07cd-4caf-a9a5-ac3b8e65d05b'
+//
+//     Responses:
+//       200: stdResponse
+//       400: stdResponse
+//       422: stdResponse
 func (s *server) TodosUpdate(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {
@@ -144,6 +222,37 @@ func (s *server) TodosUpdate(ctx *gin.Context) {
 	ctx.Status(http.StatusOK)
 }
 
+// swagger:route GET /todos{id} todo TodosGet
+//
+// Get a todo
+//
+// This will return a todo
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//
+//     Schemes: http, https
+//
+//     Deprecated: false
+//
+//     Security:
+//      - Bearer: []
+//
+//     Parameters:
+//       + name: id
+//         in: params
+//         required: true
+//         description: Id of the todo you wish to update
+//         type: string
+//         example: '89cd8496-07cd-4caf-a9a5-ac3b8e65d05b'
+//
+//     Responses:
+//       200: todo
+//       400: stdResponse
+//       422: stdResponse
 func (s *server) TodosGet(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {
@@ -167,6 +276,54 @@ var sortVariants = map[string]todos.SortBy{
 	"deadlineDESC": todos.SortByDeadlineDESC,
 }
 
+// swagger:route GET /todos todo TodosGetAll
+//
+// Get all todos
+//
+// This will return a list of your todos
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//
+//     Schemes: http, https
+//
+//     Deprecated: false
+//
+//     Security:
+//      - Bearer: []
+//
+//     Parameters:
+//       + name: pageSize
+//         in: query
+//         required: false
+//         description: Number of todos to get
+//         type: integer
+//         example: 10
+//       + name: page
+//         in: query
+//         required: false
+//         type: integer
+//         example: 0
+//       + name: onlyCompleted
+//         in: query
+//         required: false
+//         description: If true we will return only completed ones
+//         type: boolean
+//         example: true
+//       + name: sortBy
+//         in: query
+//         required: false
+//         description: How to sort it. Variations: [deadlineDESC, deadlineASC, creationDESC, creationASC]
+//         type: string
+//         example: deadlineDESC
+//
+//     Responses:
+//       200: []todo
+//       400: stdResponse
+//       422: stdResponse
 func (s *server) TodosGetAll(ctx *gin.Context) {
 	user, err := getUserData(ctx)
 	if err != nil {
@@ -228,6 +385,35 @@ func (s *server) TodosGetAll(ctx *gin.Context) {
 	respond(ctx, http.StatusOK, t, nil)
 }
 
+// swagger:route PUT /todos/{id}/complete todo TodosMakrAsComplete
+//
+// Mark as complete
+//
+// This will mark a todo as complete
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//
+//     Schemes: http, https
+//
+//     Deprecated: false
+//
+//     Security:
+//      - Bearer: []
+//
+//     Parameters:
+//       + name: id
+//         in: params
+//         required: true
+//         description: Id for the todo
+//         type: string
+//
+//     Responses:
+//       400: stdResponse
+//       422: stdResponse
 func (s *server) TodosMarkComplete(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {
@@ -243,6 +429,35 @@ func (s *server) TodosMarkComplete(ctx *gin.Context) {
 	ctx.Status(http.StatusOK)
 }
 
+// swagger:route PUT /todos/{id}/incomplete todo TodosMakrAsNotComplete
+//
+// Mark as incomplete
+//
+// This will mark a todo as incomplete
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//
+//     Schemes: http, https
+//
+//     Deprecated: false
+//
+//     Security:
+//      - Bearer: []
+//
+//     Parameters:
+//       + name: id
+//         in: params
+//         required: true
+//         description: Id for the todo
+//         type: string
+//
+//     Responses:
+//       400: stdResponse
+//       422: stdResponse
 func (s *server) TodosMarkNotComplete(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {
@@ -258,6 +473,35 @@ func (s *server) TodosMarkNotComplete(ctx *gin.Context) {
 	ctx.Status(http.StatusOK)
 }
 
+// swagger:route DELETE /todos/{id} todo TodosDelete
+//
+// Delete a todo
+//
+// This will delete a todo forever
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//
+//     Schemes: http, https
+//
+//     Deprecated: false
+//
+//     Security:
+//      - Bearer: []
+//
+//     Parameters:
+//       + name: id
+//         in: params
+//         required: true
+//         description: Id for the todo
+//         type: string
+//
+//     Responses:
+//       400: stdResponse
+//       422: stdResponse
 func (s *server) TodosDelete(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {

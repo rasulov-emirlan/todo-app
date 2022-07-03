@@ -65,6 +65,7 @@ require (
 require (
 	github.com/Masterminds/squirrel v1.5.3
 	github.com/gin-contrib/cors v1.3.1
+	github.com/gin-contrib/gzip v0.0.5
 	github.com/gin-gonic/gin v1.8.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/ilyakaznacheev/cleanenv v1.3.0
