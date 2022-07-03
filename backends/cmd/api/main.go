@@ -66,6 +66,7 @@ func main() {
 		[]byte(config.JWTsecret))
 	todosService := todos.NewService(
 		store.Todos(),
+		store.Users(),
 		logger,
 	)
 

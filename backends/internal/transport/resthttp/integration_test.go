@@ -43,7 +43,7 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 	uService := users.NewService(store.Users(), logger, []byte("secretkey"))
-	tService := todos.NewService(store.Todos(), logger)
+	tService := todos.NewService(store.Todos(), store.Users(), logger)
 	srvr := resthttp.NewServer(
 		[]string{"*"}, ":8080", time.Second*15, time.Second*15, logger, uService, tService)
 	go func() {

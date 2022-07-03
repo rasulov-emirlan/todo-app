@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"log"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -44,12 +45,13 @@ func (r *todosRepository) Get(ctx context.Context, id string) (todo todos.Todo, 
 			title, description, deadline, 
 			t.created_at, t.updated_at`,
 		).
-		From("todos AS t").Where(sq.Eq{"t.id": id}).
+		From("todos AS t").Where(sq.Eq{"t.id::text": id}).
 		InnerJoin("users AS u ON t.user_id = u.id").
 		PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return todo, err
 	}
+	log.Println(sql)
 
 	conn, err := r.conn.Acquire(ctx)
 	if err != nil {
@@ -100,7 +102,7 @@ func (r *todosRepository) GetAll(ctx context.Context, config todos.GetAllInput) 
 		Offset(uint64(config.PageSize * config.Page))
 
 	if len(config.UserID) != 0 {
-		query.Where(sq.Eq{"user_id": config.UserID})
+		query.Where(sq.Eq{"user_id::text": config.UserID})
 	}
 
 	if sorting, ok := sortingVariants[config.SortBy]; ok {
@@ -158,21 +160,11 @@ func (r *todosRepository) GetAll(ctx context.Context, config todos.GetAllInput) 
 }
 
 func (r *todosRepository) Update(ctx context.Context, inp todos.UpdateInput) error {
-	query := sq.
-		Update("todos").
-		Where(sq.Eq{"id": inp.ID})
-
-	if len(inp.Title) != 0 {
-		query.Set("title", inp.Title)
-	}
-	if len(inp.Body) != 0 {
-		query.Set("body", inp.Body)
-	}
-	if !inp.Deadline.IsZero() {
-		query.Set("deadline", inp.Deadline)
-	}
-
-	sql, args, err := query.PlaceholderFormat(sq.Dollar).ToSql()
+	sql, args, err := sq.Update("todos").
+		Set("title", inp.Title).
+		Set("description", inp.Body).
+		Set("deadline", inp.Deadline).Where(sq.Eq{"id::text": inp.ID}).
+		PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return err
 	}
@@ -191,7 +183,7 @@ func (r *todosRepository) MarkAsComplete(ctx context.Context, id string) error {
 	sql, args, err := sq.
 		Update("todos").
 		Set("completed", true).
-		Where(sq.Eq{"id": id}).
+		Where(sq.Eq{"id::text": id}).
 		PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return err
@@ -211,7 +203,7 @@ func (r *todosRepository) MarkAsNotComplete(ctx context.Context, id string) erro
 	sql, args, err := sq.
 		Update("todos").
 		Set("completed", false).
-		Where(sq.Eq{"id": id}).
+		Where(sq.Eq{"id::text": id}).
 		PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return err
@@ -230,7 +222,7 @@ func (r *todosRepository) MarkAsNotComplete(ctx context.Context, id string) erro
 func (r *todosRepository) Delete(ctx context.Context, id string) error {
 	sql, args, err := sq.
 		Delete("todos").
-		Where(sq.Eq{"id": id}).
+		Where(sq.Eq{"id::text": id}).
 		PlaceholderFormat(sq.Dollar).ToSql()
 	if err != nil {
 		return err

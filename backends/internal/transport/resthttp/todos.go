@@ -193,6 +193,12 @@ func (s *server) TodosCreate(ctx *gin.Context) {
 //       400: stdResponse
 //       422: stdResponse
 func (s *server) TodosUpdate(ctx *gin.Context) {
+	u, err := getUserData(ctx)
+	if err != nil {
+		respond(ctx, http.StatusUnauthorized, nil, []string{err.Error()})
+		return
+	}
+
 	id := ctx.Param("id")
 	if len(id) == 0 {
 		respond(ctx, http.StatusBadRequest, nil, []string{ErrParamNotProvided.Error()})
@@ -208,7 +214,7 @@ func (s *server) TodosUpdate(ctx *gin.Context) {
 		return
 	}
 
-	err := s.todosService.Update(ctx, todos.UpdateInput{
+	err = s.todosService.Update(ctx, u.ID, todos.UpdateInput{
 		ID:       id,
 		Title:    req.Title,
 		Body:     req.Body,
@@ -415,13 +421,19 @@ func (s *server) TodosGetAll(ctx *gin.Context) {
 //       400: stdResponse
 //       422: stdResponse
 func (s *server) TodosMarkComplete(ctx *gin.Context) {
+	u, err := getUserData(ctx)
+	if err != nil {
+		respond(ctx, http.StatusUnauthorized, nil, []string{err.Error()})
+		return
+	}
+
 	id := ctx.Param("id")
 	if len(id) == 0 {
 		respond(ctx, http.StatusBadRequest, nil, []string{ErrParamNotProvided.Error()})
 		return
 	}
 
-	if err := s.todosService.MarkAsComplete(ctx, id); err != nil {
+	if err := s.todosService.MarkAsComplete(ctx, u.ID, id); err != nil {
 		respond(ctx, http.StatusInternalServerError, nil, []string{err.Error()})
 		return
 	}
@@ -459,13 +471,18 @@ func (s *server) TodosMarkComplete(ctx *gin.Context) {
 //       400: stdResponse
 //       422: stdResponse
 func (s *server) TodosMarkNotComplete(ctx *gin.Context) {
+	u, err := getUserData(ctx)
+	if err != nil {
+		respond(ctx, http.StatusUnauthorized, nil, []string{err.Error()})
+		return
+	}
 	id := ctx.Param("id")
 	if len(id) == 0 {
 		respond(ctx, http.StatusBadRequest, nil, []string{ErrParamNotProvided.Error()})
 		return
 	}
 
-	if err := s.todosService.MarkAsNotComplete(ctx, id); err != nil {
+	if err := s.todosService.MarkAsNotComplete(ctx, u.ID, id); err != nil {
 		respond(ctx, http.StatusInternalServerError, nil, []string{err.Error()})
 		return
 	}
@@ -503,13 +520,18 @@ func (s *server) TodosMarkNotComplete(ctx *gin.Context) {
 //       400: stdResponse
 //       422: stdResponse
 func (s *server) TodosDelete(ctx *gin.Context) {
+	u, err := getUserData(ctx)
+	if err != nil {
+		respond(ctx, http.StatusUnauthorized, nil, []string{err.Error()})
+		return
+	}
 	id := ctx.Param("id")
 	if len(id) == 0 {
 		respond(ctx, http.StatusBadRequest, nil, []string{ErrParamNotProvided.Error()})
 		return
 	}
 
-	if err := s.todosService.Delete(ctx, id); err != nil {
+	if err := s.todosService.Delete(ctx, u.ID, id); err != nil {
 		respond(ctx, http.StatusInternalServerError, nil, []string{err.Error()})
 		return
 	}

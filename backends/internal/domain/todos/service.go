@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
 	"github.com/rasulov-emirlan/todo-app/backends/pkg/log"
 )
 
@@ -19,28 +20,34 @@ type (
 		Delete(ctx context.Context, id string) error
 	}
 
+	UsersRepository interface {
+		Get(ctx context.Context, id string) (users.User, error)
+	}
+
 	Service interface {
 		Create(ctx context.Context, inp CreateInput) (id string, err error)
 		Get(ctx context.Context, id string) (todo Todo, err error)
 		GetAll(ctx context.Context, config GetAllInput) (todos []Todo, err error)
 		// Will not update fields that are empty in UpdateInput.
 		// But ID is required
-		Update(ctx context.Context, inp UpdateInput) error
-		MarkAsComplete(ctx context.Context, id string) error
-		MarkAsNotComplete(ctx context.Context, id string) error
-		Delete(ctx context.Context, id string) error
+		Update(ctx context.Context, userID string, inp UpdateInput) error
+		MarkAsComplete(ctx context.Context, userID, id string) error
+		MarkAsNotComplete(ctx context.Context, userID, id string) error
+		Delete(ctx context.Context, userID, id string) error
 	}
 
 	service struct {
-		repo Repository
-		log  *log.Logger
+		repo  Repository
+		uRepo UsersRepository
+		log   *log.Logger
 	}
 )
 
-func NewService(repo Repository, logger *log.Logger) Service {
+func NewService(repo Repository, uRepo UsersRepository, logger *log.Logger) Service {
 	return &service{
-		repo: repo,
-		log:  logger,
+		repo:  repo,
+		uRepo: uRepo,
+		log:   logger,
 	}
 }
 
@@ -83,7 +90,14 @@ func (s *service) GetAll(ctx context.Context, config GetAllInput) (todos []Todo,
 // TODO: find a better way of sending changesets
 // maybe a map[customTypeForFields]any
 // would be a good solution...or maybe it would be so bad
-func (s *service) Update(ctx context.Context, inp UpdateInput) error {
+func (s *service) Update(ctx context.Context, userID string, inp UpdateInput) error {
+	ok, err := s.isAllowed(ctx, userID, inp.ID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return ErrNotAllowed
+	}
 	if len(inp.Title) < 6 || len(inp.Title) > 100 {
 		return ErrInvalidTitle
 	}
@@ -93,7 +107,7 @@ func (s *service) Update(ctx context.Context, inp UpdateInput) error {
 	if inp.Deadline.Before(time.Now()) {
 		return ErrInvalidDeadline
 	}
-	err := s.repo.Update(ctx, inp)
+	err = s.repo.Update(ctx, inp)
 	if err != nil {
 		return err
 	}
@@ -101,8 +115,15 @@ func (s *service) Update(ctx context.Context, inp UpdateInput) error {
 	return nil
 }
 
-func (s *service) MarkAsComplete(ctx context.Context, id string) error {
-	err := s.repo.MarkAsComplete(ctx, id)
+func (s *service) MarkAsComplete(ctx context.Context, userID, id string) error {
+	ok, err := s.isAllowed(ctx, userID, id)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return ErrNotAllowed
+	}
+	err = s.repo.MarkAsComplete(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -110,8 +131,15 @@ func (s *service) MarkAsComplete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (s *service) MarkAsNotComplete(ctx context.Context, id string) error {
-	err := s.repo.MarkAsNotComplete(ctx, id)
+func (s *service) MarkAsNotComplete(ctx context.Context, userID, id string) error {
+	ok, err := s.isAllowed(ctx, userID, id)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return ErrNotAllowed
+	}
+	err = s.repo.MarkAsNotComplete(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -119,11 +147,36 @@ func (s *service) MarkAsNotComplete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (s *service) Delete(ctx context.Context, id string) error {
-	err := s.repo.Delete(ctx, id)
+func (s *service) Delete(ctx context.Context, userID, id string) error {
+	ok, err := s.isAllowed(ctx, userID, id)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return ErrNotAllowed
+	}
+	err = s.repo.Delete(ctx, id)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (s *service) isAllowed(ctx context.Context, userID, todoID string) (bool, error) {
+	u, err := s.uRepo.Get(ctx, userID)
+	if err != nil {
+		return false, err
+	}
+	if u.Role == users.RoleAdmin {
+		return true, nil
+	}
+	t, err := s.repo.Get(ctx, todoID)
+	if err != nil {
+		return false, err
+	}
+	if t.Author.ID == u.ID {
+		return true, nil
+	}
+	return false, nil
 }

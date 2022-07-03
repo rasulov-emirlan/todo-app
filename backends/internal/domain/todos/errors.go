@@ -7,4 +7,5 @@ var (
 	ErrInvalidBody  = errors.New("todos: body can't be more than 2000 characters")
 
 	ErrInvalidDeadline = errors.New("todos: deadline can't be in the past")
+	ErrNotAllowed      = errors.New("todos: only admins are allowed to update todos that dont belong to them")
 )
