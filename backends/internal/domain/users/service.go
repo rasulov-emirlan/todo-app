@@ -10,12 +10,10 @@ import (
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
-
 	"github.com/golang-jwt/jwt"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/rasulov-emirlan/todo-app/backends/pkg/log"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type (
@@ -126,42 +124,65 @@ func (s *service) UnpackValidationErrors(err error) []string {
 }
 
 func (s *service) SignUp(ctx context.Context, inp SignUpInput) (SignInOutput, error) {
+	defer s.log.Sync()
+	s.log.Info("users: SignUp(): start")
 	if err := s.validation.Struct(inp); err != nil {
+		s.log.Debug(
+			"users: SignUp(): invalid info was provided",
+			// make sure not to log passwords anywhere
+			log.String("username", inp.Username),
+			log.String("email", inp.Email),
+		)
 		return SignInOutput{}, err
 	}
+	// Technicaly emails are case sensitive.
+	// But we keep them all lower case
+	// to make our lifes easier, synce a lot of
+	// other services are not case sensitive
 	inp.Email = strings.ToLower(inp.Email)
 	passwordHash, err := hashPassword(inp.Password)
 	if err != nil {
+		s.log.Error("users: SignUp(): could not hash password", log.String("error", err.Error()))
 		return SignInOutput{}, err
 	}
 	_, err = s.repo.Create(ctx, inp.Email, passwordHash, inp.Username)
 	if err != nil {
+		s.log.Debug("users: SignUp(): could not create user in database", log.String("error", err.Error()))
 		return SignInOutput{}, err
 	}
 
 	return s.SignIn(ctx, inp.Email, inp.Password)
 }
 
+// TODO: add a remember me option
 func (s *service) SignIn(ctx context.Context, email, password string) (SignInOutput, error) {
+	defer s.log.Sync()
+	s.log.Info("users: SignIn(): start")
 	user, err := s.repo.GetByEmail(ctx, email)
 	if err != nil {
 		return SignInOutput{}, err
 	}
 	if err := comparePassword(password, user.PasswordHash); err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			s.log.Debug("users: SignIn(): wrong password")
 			return SignInOutput{}, ErrWrongPassword
 		}
-		return SignInOutput{}, err
+		// TODO: not sure what to do here. is it ok to return err from bcrypt?
+		s.log.Error("users: SignIn(): could not compare passwords", log.String("error", err.Error()))
+		return SignInOutput{}, ErrWrongPassword
 	}
 
 	return generateKeys(user, s.secretKey, accessLifeTime, refreshLifeTime)
 }
 
 func (s *service) Refresh(ctx context.Context, refreshKey string) (SignInOutput, error) {
+	defer s.log.Sync()
+	s.log.Info("users: Refresh(): start")
 	token, err := jwt.ParseWithClaims(refreshKey, &JWTrefresh{}, func(token *jwt.Token) (interface{}, error) {
 		return s.secretKey, nil
 	})
 	if err != nil {
+		s.log.Debug("users: Refresh(): could not parse claims", log.String("error", err.Error()))
 		return SignInOutput{}, err
 	}
 	claims, ok := token.Claims.(*JWTrefresh)
@@ -170,17 +191,38 @@ func (s *service) Refresh(ctx context.Context, refreshKey string) (SignInOutput,
 	}
 	user, err := s.repo.Get(ctx, claims.ID)
 	if err != nil {
+		s.log.Debug(
+			"users: Debug(): could not get user by id",
+			log.String("id", claims.ID),
+			log.String("error", err.Error()),
+		)
 		return SignInOutput{}, err
 	}
-	return generateKeys(user, s.secretKey, accessLifeTime, time.Duration(claims.ExpiresAt))
+
+	// TODO: add a remember me option or at least think about it
+	return generateKeys(user, s.secretKey, accessLifeTime, refreshLifeTime)
 }
 
 func (s *service) Update(ctx context.Context, inp UpdateInput) error {
+	defer s.log.Sync()
+	s.log.Info("users: Update(): start")
 	return s.repo.Update(ctx, inp)
 }
 
 func (s *service) Delete(ctx context.Context, id string) error {
-	return s.repo.Delete(ctx, id)
+	defer s.log.Sync()
+	s.log.Info("users: Delete(): start")
+	err := s.repo.Delete(ctx, id)
+	if err != nil {
+		s.log.Debug(
+			"users: Delete(): could not delete user",
+			log.String("id", id),
+			log.String("error", err.Error()),
+		)
+		return err
+	}
+	s.log.Info("users: Delete(): user was deleted", log.String("id", id))
+	return nil
 }
 
 func generateKeys(user User, secretKey []byte, accessEXP, refreshEXP time.Duration) (SignInOutput, error) {
@@ -220,6 +262,9 @@ func generateKeys(user User, secretKey []byte, accessEXP, refreshEXP time.Durati
 }
 
 func (s *service) UnpackAccessKey(ctx context.Context, accessKey string) (JWTaccess, error) {
+	// TODO: idk. i thinkg this method might be used too often.
+	// so maybe we should not log anything in here. Or log everything in
+	// debug level :|
 	token, err := jwt.ParseWithClaims(accessKey, &JWTaccess{}, func(token *jwt.Token) (interface{}, error) {
 		return s.secretKey, nil
 	})

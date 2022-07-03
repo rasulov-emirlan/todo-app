@@ -10,9 +10,9 @@ type (
 	}
 
 	UpdateInput struct {
-		ID       string
-		Username string
-		Password string
+		ID       string `validate:"required"`
+		Username string `validate:"username"`
+		Password string `validate:"password"`
 	}
 
 	SignInOutput struct {
