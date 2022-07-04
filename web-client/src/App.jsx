@@ -1,8 +1,10 @@
+import Sidebar from "./components/Sidebar";
 import Todos from "./components/Todos";
 
 function App() {
 	return (
-		<div className='App max-w-[1280px] mx-auto'>
+		<div className='flex'>
+			<Sidebar />
 			<Todos />
 		</div>
 	);

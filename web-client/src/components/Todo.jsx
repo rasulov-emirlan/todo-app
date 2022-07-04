@@ -7,7 +7,7 @@ const Todo = ({ todo }) => {
 	return (
 		<div
 			className='
-				w-full 
+				max-w-[600px] 
 				bg-white
 		 		text-black
 		 		border-1

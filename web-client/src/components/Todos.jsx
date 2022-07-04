@@ -46,8 +46,8 @@ const Todos = () => {
 		updatedAt: null,
 	});
 	return (
-		<div className='p-2 flex flex-col gap-3'>
-			<div className='bg-white p-2 rounded-md flex flex-col gap-3'>
+		<div className='p-2 flex flex-col gap-3 w-full'>
+			<div className='bg-white p-2 rounded-md flex flex-col gap-3 '>
 				<input
 					type='text'
 					className='rounded-md w-full p-2 border-gray-200 border'
@@ -69,7 +69,7 @@ const Todos = () => {
 						setNewtodo((prev) => ({ ...prev, deadline: e.value }))
 					}
 				/>
-				<button className='bg-blue-500 text-white w-full p-2 rounded-md hover:bg-blue-600'>
+				<button className='bg-blue-500 animate-pulse text-white w-full p-2 rounded-md hover:bg-blue-600'>
 					create
 				</button>
 			</div>
