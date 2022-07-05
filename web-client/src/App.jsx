@@ -3,7 +3,7 @@ import Todos from "./components/Todos";
 
 function App() {
 	return (
-		<div className='flex'>
+		<div className='sm:flex'>
 			<Sidebar />
 			<Todos />
 		</div>

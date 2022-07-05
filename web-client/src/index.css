@@ -4,7 +4,7 @@
 
 @layer base {
 	body {
-		@apply bg-gradient-to-br from-orange-400 via-red-500 to-pink-500 min-h-screen;
+		@apply bg-gradient-to-br from-blue-200 to-pink-200 min-h-screen;
 	}
 }
 
