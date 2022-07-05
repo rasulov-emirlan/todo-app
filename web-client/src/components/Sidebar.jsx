@@ -1,18 +1,26 @@
 import React from "react";
-import { FaHome } from "react-icons/fa";
+import { FaHome, FaUserAlt } from "react-icons/fa";
 
 const Sidebar = () => {
 	return (
 		// this could be made better if we played with positions a bit more
 		// probably it would make a bit more flexable.
 		// cause right now we depend on our parent elements flex styling
-		<div className='bg-white flex sm:flex-col items-center p-2'>
+		<div className='bg-white flex sm:flex-col gap-2 items-center p-2'>
 			<a
 				href='/'
-				className='bg-blue-500  p-1 rounded-lg hover:rounded-3xl 
+				className='bg-blue-500 flex justify-center items-center  w-12 h-12 rounded-lg hover:rounded-3xl 
                 transition-all duration-100 ease-linear
                 cursor-pointer'>
-				<FaHome className='h-12 w-12 text-white' />
+				<FaHome className='w-8 h-8 text-white' />
+			</a>
+
+			<a
+				href='/auth'
+				className='bg-blue-500 flex justify-center items-center  w-12 h-12 rounded-lg hover:rounded-3xl 
+                transition-all duration-100 ease-linear
+                cursor-pointer'>
+				<FaUserAlt className='h-8 w-8 text-white' />
 			</a>
 		</div>
 	);
