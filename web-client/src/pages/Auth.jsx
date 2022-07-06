@@ -1,4 +1,8 @@
 import { useState } from "react";
+import { setInterceptors } from "../api";
+import { usersSignUp } from "../api/user";
+import { useCurrentUser } from "../hooks/user";
+import jwt_decode from 'jwt-decode';
 
 // modes:
 // 1: signup
@@ -38,9 +42,42 @@ const SignUp = () => {
 		password: "",
 		passwordRepeat: "",
 	});
+	const [warnings, setWarnings] = useState([]);
+
+	const [currUser, setCurrUser] = useCurrentUser([]);
+
+	const handleSubmit = async (e) => {
+		e.preventDefault()
+		try {
+			const data = await usersSignUp(
+				form.email,
+				form.password,
+				form.username,
+			);
+			if (data.status === 200) {
+				setInterceptors(data.data.accessToken)
+				// const decoded = jwt_decode(data.data.accessToken);
+				setCurrUser({
+					isSignedIn: true,
+				});
+				return;
+			}
+			setWarnings(data.errors);
+		} catch (err) {
+			console.error(err);
+		}
+	};
 
 	return (
 		<form className='flex flex-col items-center gap-2 mt-4'>
+			{warnings.length !== 0 && (
+				<div name="">
+					{warnings.map((v, i) => (
+						<span key={i}>{v}</span>
+					))}
+				</div>
+			)}
+			
 			<input
 				className='max-w-[800px] p-2 w-full border-blue-500 border rounded-md'
 				type='email'
@@ -77,9 +114,8 @@ const SignUp = () => {
 				}
 				placeholder='username...'
 			/>
-			<button className='bg-blue-500 w-1/3 max-w-[500px] p-2 rounded-md text-white shadow-mdmax-w-[800px] '>
-				Sign Up
-			</button>
+	
+			<input onClick={e => handleSubmit(e) } type="submit" value="Sign Up" className="bg-blue-500 w-1/3 max-w-[500px] p-2 rounded-md text-white shadow-mdmax-w-[800px]" />
 		</form>
 	);
 };

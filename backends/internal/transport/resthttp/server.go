@@ -44,7 +44,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 
@@ -96,11 +95,7 @@ func (s *server) Run() error {
 var swagger embed.FS
 
 func (s *server) setRoutes(router *gin.Engine) {
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowCredentials: true,
-		AllowMethods:     []string{"GET", "POST", "OPTIONS", "DELETE", "PATC", "PUT"},
-	}))
+	router.Use(CORSMiddleware())
 	router.Use(gin.Recovery())
 	router.Use(gin.Logger())
 	router.Use(gzip.Gzip(gzip.BestCompression))

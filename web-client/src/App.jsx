@@ -14,7 +14,7 @@ function App() {
 	});
 	return (
 		<div className='sm:flex'>
-			<UserContext.Provider value={currentUser}>
+			<UserContext.Provider value={[currentUser, setCurrentUser]}>
 				<Sidebar />
 				<CustomRouter isSignedIn={currentUser.isSignedIn} />
 			</UserContext.Provider>

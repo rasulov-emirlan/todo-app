@@ -2,7 +2,7 @@ import axios from "axios";
 import { usersRefresh } from "./user";
 
 export const $api = axios.create({
-	baseURL: "https://localhost:8080/api",
+	baseURL: "http://localhost:8080/api",
 	withCredentials: true,
 });
 
