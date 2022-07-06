@@ -25,7 +25,7 @@ func (s *server) isAdmin(ctx *gin.Context) {
 	}
 	claims, ok := c.(*users.JWTaccess)
 	if !ok {
-		ctx.AbortWithStatus(http.StatusBadRequest)
+		ctx.AbortWithStatus(http.StatusForbidden)
 		return
 	}
 	if claims.Role != users.RoleAdmin {
@@ -38,21 +38,21 @@ func (s *server) isAdmin(ctx *gin.Context) {
 func (s *server) requireAuth(ctx *gin.Context) {
 	accessKey := ctx.Request.Header.Get("Authorization")
 	if accessKey == "" {
-		ctx.AbortWithStatus(http.StatusUnauthorized)
+		ctx.AbortWithStatus(http.StatusForbidden)
 		return
 	}
 	tokens := strings.Fields(accessKey)
 	if len(tokens) != 2 {
-		ctx.AbortWithStatus(http.StatusUnauthorized)
+		ctx.AbortWithStatus(http.StatusForbidden)
 		return
 	}
 	if tokens[0] != "Bearer" {
-		ctx.AbortWithStatus(http.StatusUnauthorized)
+		ctx.AbortWithStatus(http.StatusForbidden)
 		return
 	}
 	claims, err := s.usersService.UnpackAccessKey(ctx, tokens[1])
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusUnauthorized)
+		ctx.AbortWithStatus(http.StatusForbidden)
 		return
 	}
 	ctx.Set(usersInfoInContext, &claims)
