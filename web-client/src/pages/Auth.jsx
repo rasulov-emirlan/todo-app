@@ -126,23 +126,28 @@ const SignIn = () => {
 		email: "",
 		password: "",
 	});
+	const [currUser, setCurrUser] = useCurrentUser();
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		try {
-			const data = await usersSignIn(form.email, form.password);
-			if (data.status === 200) {
-				setInterceptors(data.data.accessToken);
-				// const decoded = jwt_decode(data.data.accessToken);
-				setCurrUser({
-					isSignedIn: true,
-				});
-				return;
-			}
-			setWarnings(data.errors);
-		} catch (err) {
-			console.error(err);
-		}
+		// try {
+		// 	const data = await usersSignIn(form.email, form.password);
+		// 	if (data.status === 200) {
+		// 		setInterceptors(data.data.accessToken);
+		// 		// const decoded = jwt_decode(data.data.accessToken);
+		// 		setCurrUser({
+		// 			isSignedIn: true,
+		// 		});
+		// 		return;
+		// 	}
+		// 	setWarnings(data.errors);
+		// } catch (err) {
+		// 	console.error(err);
+		// }
+		setCurrUser({
+			username: "",
+			isSignedIn: true,
+		});
 	};
 
 	return (

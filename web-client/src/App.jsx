@@ -12,6 +12,7 @@ function App() {
 		username: "",
 		isSignedIn: false,
 	});
+
 	return (
 		<div className='sm:flex'>
 			<UserContext.Provider value={[currentUser, setCurrentUser]}>
