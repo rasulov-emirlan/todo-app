@@ -64,7 +64,7 @@ func NewService(repo Repository, logger *logging.Logger, secretKey []byte) (Serv
 		func(ut ut.Translator, fe validator.FieldError) string {
 			t, err := ut.T("password", fe.Field())
 			if err != nil {
-				logger.Fatal("Could not initialize users serivice", log.String("error", err.Error()))
+				logger.Fatal("Could not initialize users serivice", logging.String("error", err.Error()))
 			}
 			return t
 		},
@@ -79,7 +79,7 @@ func NewService(repo Repository, logger *logging.Logger, secretKey []byte) (Serv
 		func(ut ut.Translator, fe validator.FieldError) string {
 			t, err := ut.T("username", fe.Field())
 			if err != nil {
-				logger.Fatal("Could not initialize users serivice", log.String("error", err.Error()))
+				logger.Fatal("Could not initialize users serivice", logging.String("error", err.Error()))
 			}
 			return t
 		},
@@ -131,8 +131,8 @@ func (s *service) SignUp(ctx context.Context, inp SignUpInput) (SignInOutput, er
 		s.log.Debug(
 			"users: SignUp(): invalid info was provided",
 			// make sure not to log passwords anywhere
-			log.String("username", inp.Username),
-			log.String("email", inp.Email),
+			logging.String("username", inp.Username),
+			logging.String("email", inp.Email),
 		)
 		return SignInOutput{}, err
 	}
@@ -143,12 +143,12 @@ func (s *service) SignUp(ctx context.Context, inp SignUpInput) (SignInOutput, er
 	inp.Email = strings.ToLower(inp.Email)
 	passwordHash, err := hashPassword(inp.Password)
 	if err != nil {
-		s.log.Error("users: SignUp(): could not hash password", log.String("error", err.Error()))
+		s.log.Error("users: SignUp(): could not hash password", logging.String("error", err.Error()))
 		return SignInOutput{}, err
 	}
 	_, err = s.repo.Create(ctx, inp.Email, passwordHash, inp.Username)
 	if err != nil {
-		s.log.Debug("users: SignUp(): could not create user in database", log.String("error", err.Error()))
+		s.log.Debug("users: SignUp(): could not create user in database", logging.String("error", err.Error()))
 		return SignInOutput{}, err
 	}
 
@@ -169,7 +169,7 @@ func (s *service) SignIn(ctx context.Context, email, password string) (SignInOut
 			return SignInOutput{}, ErrWrongPassword
 		}
 		// TODO: not sure what to do here. is it ok to return err from bcrypt?
-		s.log.Error("users: SignIn(): could not compare passwords", log.String("error", err.Error()))
+		s.log.Error("users: SignIn(): could not compare passwords", logging.String("error", err.Error()))
 		return SignInOutput{}, ErrWrongPassword
 	}
 
@@ -183,7 +183,7 @@ func (s *service) Refresh(ctx context.Context, refreshKey string) (SignInOutput,
 		return s.secretKey, nil
 	})
 	if err != nil {
-		s.log.Debug("users: Refresh(): could not parse claims", log.String("error", err.Error()))
+		s.log.Debug("users: Refresh(): could not parse claims", logging.String("error", err.Error()))
 		return SignInOutput{}, err
 	}
 	claims, ok := token.Claims.(*JWTrefresh)
@@ -194,8 +194,8 @@ func (s *service) Refresh(ctx context.Context, refreshKey string) (SignInOutput,
 	if err != nil {
 		s.log.Debug(
 			"users: Debug(): could not get user by id",
-			log.String("id", claims.ID),
-			log.String("error", err.Error()),
+			logging.String("id", claims.ID),
+			logging.String("error", err.Error()),
 		)
 		return SignInOutput{}, err
 	}
@@ -217,12 +217,12 @@ func (s *service) Delete(ctx context.Context, id string) error {
 	if err != nil {
 		s.log.Debug(
 			"users: Delete(): could not delete user",
-			log.String("id", id),
-			log.String("error", err.Error()),
+			logging.String("id", id),
+			logging.String("error", err.Error()),
 		)
 		return err
 	}
-	s.log.Info("users: Delete(): user was deleted", log.String("id", id))
+	s.log.Info("users: Delete(): user was deleted", logging.String("id", id))
 	return nil
 }
 

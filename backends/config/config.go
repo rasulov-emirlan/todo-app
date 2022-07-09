@@ -6,7 +6,7 @@ type Config struct {
 	JWTsecret string `env:"JWT_SECRET" env-default:"secret"`
 	Port      string `env:"PORT" env-default:":8080"`
 	Log       struct {
-		Level  string `env:"LOG_LEVEL" env-default:"info"`
+		Level  string `env:"LOG_LEVEL" env-default:"debug"`
 		Output string `env:"LOG_OUTPUT" env-default:"stdout"`
 	}
 	Database struct {

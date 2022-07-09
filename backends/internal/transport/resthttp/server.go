@@ -44,6 +44,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 
@@ -95,11 +96,12 @@ func (s *server) Run() error {
 var swagger embed.FS
 
 func (s *server) setRoutes(router *gin.Engine) {
-	router.Use(CORSMiddleware())
+	router.Use(cors.Default())
 	router.Use(gin.Recovery())
 	router.Use(gin.Logger())
 	router.Use(gzip.Gzip(gzip.BestCompression))
-	api := router.Group("/api")
+	api := router.Group("api")
+
 	dir, err := fs.Sub(swagger, "swaggerui")
 	if err != nil {
 		s.logger.Fatal(err.Error())
@@ -112,7 +114,7 @@ func (s *server) setRoutes(router *gin.Engine) {
 
 	api.GET("/health", s.requireAuth, s.isAdmin, healthCheck)
 
-	usersGroup := api.Group("/users")
+	usersGroup := api.Group("users")
 	{
 		// TODO: separate users logic and auth
 		usersGroup.POST("/auth/signup", s.UsersSignUp)
@@ -123,7 +125,7 @@ func (s *server) setRoutes(router *gin.Engine) {
 		usersGroup.DELETE("/:id", s.requireAuth, s.isAdmin, s.UsersDelete)
 	}
 
-	todosGroup := api.Group("/todos", s.requireAuth)
+	todosGroup := api.Group("todos", s.requireAuth)
 	{
 		todosGroup.POST("", s.TodosCreate)
 		todosGroup.GET("/:id", s.TodosGet)
