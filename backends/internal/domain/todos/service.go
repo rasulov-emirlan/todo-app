@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
-	"github.com/rasulov-emirlan/todo-app/backends/pkg/log"
+	"github.com/rasulov-emirlan/todo-app/backends/pkg/logging"
 )
 
 type (
@@ -42,11 +42,11 @@ type (
 	service struct {
 		repo  Repository
 		uRepo UsersRepository
-		log   *log.Logger
+		log   *logging.Logger
 	}
 )
 
-func NewService(repo Repository, uRepo UsersRepository, logger *log.Logger) Service {
+func NewService(repo Repository, uRepo UsersRepository, logger *logging.Logger) Service {
 	return &service{
 		repo:  repo,
 		uRepo: uRepo,

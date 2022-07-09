@@ -13,9 +13,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/golang-jwt/jwt"
+	"github.com/rasulov-emirlan/todo-app/backends/pkg/logging"
 	"golang.org/x/crypto/bcrypt"
-
-	"github.com/rasulov-emirlan/todo-app/backends/pkg/log"
 )
 
 type (
@@ -44,13 +43,13 @@ type (
 		repo       Repository
 		validation *validator.Validate
 		trans      ut.Translator
-		log        *log.Logger
+		log        *logging.Logger
 
 		secretKey []byte
 	}
 )
 
-func NewService(repo Repository, logger *log.Logger, secretKey []byte) (Service, error) {
+func NewService(repo Repository, logger *logging.Logger, secretKey []byte) (Service, error) {
 	en := en.New()
 	uni := ut.New(en, en)
 

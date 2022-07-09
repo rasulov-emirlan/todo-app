@@ -17,7 +17,7 @@ import (
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/storage/postgres"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp"
-	customLogger "github.com/rasulov-emirlan/todo-app/backends/pkg/log"
+	"github.com/rasulov-emirlan/todo-app/backends/pkg/logging"
 )
 
 const (
@@ -38,7 +38,7 @@ func TestMain(m *testing.M) {
 	if testMain(m) != 0 {
 		os.Exit(1)
 	}
-	logger, err := customLogger.NewLogger("debug", "stdout")
+	logger, err := logging.NewLogger("debug", "stdout")
 	if err != nil {
 		log.Fatal(err)
 	}

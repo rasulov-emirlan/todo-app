@@ -49,13 +49,13 @@ import (
 
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/todos"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
-	"github.com/rasulov-emirlan/todo-app/backends/pkg/log"
+	"github.com/rasulov-emirlan/todo-app/backends/pkg/logging"
 )
 
 type server struct {
 	server  *http.Server
 	address string
-	logger  *log.Logger
+	logger  *logging.Logger
 
 	usersService users.Service
 	todosService todos.Service
@@ -66,7 +66,7 @@ func NewServer(
 	address string,
 	rTimeout time.Duration,
 	wTimeout time.Duration,
-	logger *log.Logger,
+	logger *logging.Logger,
 	usersService users.Service,
 	todosService todos.Service,
 ) *server {

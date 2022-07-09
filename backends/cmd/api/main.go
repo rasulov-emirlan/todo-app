@@ -14,7 +14,7 @@ import (
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/storage/postgres"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp"
-	customLog "github.com/rasulov-emirlan/todo-app/backends/pkg/log"
+	"github.com/rasulov-emirlan/todo-app/backends/pkg/logging"
 	"go.uber.org/zap"
 )
 
@@ -31,7 +31,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	logger, err := customLog.NewLogger(
+	logger, err := logging.NewLogger(
 		config.Log.Level,
 		config.Log.Output,
 	)
@@ -64,7 +64,7 @@ func main() {
 		logger,
 		[]byte(config.JWTsecret))
 	if err != nil {
-		logger.Fatal("Could not initialize usersService", customLog.String("error", err.Error()))
+		logger.Fatal("Could not initialize usersService", logging.String("error", err.Error()))
 	}
 	todosService := todos.NewService(
 		store.Todos(),
