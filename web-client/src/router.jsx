@@ -1,9 +1,9 @@
 import Auth from "./pages/Auth";
 import Todos from "./pages/Todos";
 
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
+import { useCurrentUser } from "./contexts/UserContext";
 
-// TODO: add a router
 const routes = [
 	{
 		route: "/",
@@ -17,39 +17,40 @@ const routes = [
 	},
 ];
 
-export const CustomRouter = ({ isSignedIn }) => {
+export const CustomRouter = () => {
+	const currentUser = useCurrentUser();
+
 	return (
 		<>
-			<BrowserRouter>
-				<Routes>
-					{routes.map((r, i) => (
-						<>
-							{isSignedIn === false && r.needAuth ? (
-								<Route
-									path={r.route}
-									element={
-										<div
-											className='
+			<Routes>
+				{routes.map((r, i) => (
+					<>
+						{currentUser.isSignedIn === false && r.needAuth ? (
+							<Route
+								key={i}
+								path={r.route}
+								element={
+									<div
+										className='
                                             w-full h-full 
                                             min-h-screen flex flex-col 
                                             justify-center items-center bg-white'>
-											<h1 className='text-xl'>
-												Please{" "}
-												<a href='/auth' className='text-blue-500'>
-													sign in
-												</a>{" "}
-												to access this page
-											</h1>
-										</div>
-									}
-								/>
-							) : (
-								<Route path={r.route} element={r.elemnt}></Route>
-							)}
-						</>
-					))}
-				</Routes>
-			</BrowserRouter>
+										<h1 className='text-xl'>
+											Please{" "}
+											<a href='/auth' className='text-blue-500'>
+												sign in
+											</a>{" "}
+											to access this page
+										</h1>
+									</div>
+								}
+							/>
+						) : (
+							<Route key={i} path={r.route} element={r.elemnt}></Route>
+						)}
+					</>
+				))}
+			</Routes>
 		</>
 	);
 };

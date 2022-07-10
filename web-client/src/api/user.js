@@ -9,10 +9,16 @@ export const usersSignUp = (email, password, username) => {
 };
 
 export const usersSignIn = (email, password) => {
-	return $api.post("/users/auth/signin", {
-		email: email,
-		password: password,
-	});
+	return $api.post(
+		"/users/auth/signin",
+		{
+			email: email,
+			password: password,
+		},
+		{
+			withCredentials: true,
+		}
+	);
 };
 
 export const usersSignOut = () => {

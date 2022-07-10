@@ -1,24 +1,17 @@
-import { useState } from "react";
-import { createContext } from "react";
+import { BrowserRouter } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
+import UserContextProvider from "./contexts/UserContext";
 import { CustomRouter } from "./router";
 
-// DO not use this context directly
-// use hook in hooks/user.js
-export const UserContext = createContext();
-
 function App() {
-	const [currentUser, setCurrentUser] = useState({
-		username: "",
-		isSignedIn: false,
-	});
-
 	return (
 		<div className='sm:flex'>
-			<UserContext.Provider value={[currentUser, setCurrentUser]}>
-				<Sidebar />
-				<CustomRouter isSignedIn={currentUser.isSignedIn} />
-			</UserContext.Provider>
+			<BrowserRouter>
+				<UserContextProvider>
+					<Sidebar />
+					<CustomRouter />
+				</UserContextProvider>
+			</BrowserRouter>
 		</div>
 	);
 }
