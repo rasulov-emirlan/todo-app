@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import Todo from "../components/Todo";
+import { Todo } from "../components";
 import styles from "./Todos.module.css";
 
 // this whole component is a page of its own

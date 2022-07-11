@@ -1,7 +1,7 @@
 import { BrowserRouter } from "react-router-dom";
-import Sidebar from "./components/Sidebar";
 import UserContextProvider from "./contexts/UserContext";
 import { CustomRouter } from "./router";
+import { Sidebar } from "./components";
 
 function App() {
 	return (

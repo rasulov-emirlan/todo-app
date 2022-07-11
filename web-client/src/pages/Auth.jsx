@@ -1,11 +1,7 @@
 import { useState } from "react";
 import { setInterceptors } from "../api";
 import { usersSignIn, usersSignUp } from "../api/user";
-import {
-	useCurrentUser,
-	useSetCurrentUserSignin,
-} from "../contexts/UserContext";
-import jwt_decode from "jwt-decode";
+import { useSetCurrentUserSignin } from "../contexts/UserContext";
 
 const Auth = () => {
 	// modes:
@@ -60,7 +56,6 @@ const SignUp = ({ setWarnings }) => {
 		passwordRepeat: "",
 	});
 
-	const currUser = useCurrentUser();
 	const setCurrentUserSignin = useSetCurrentUserSignin();
 
 	const handleSubmit = async (e) => {
@@ -68,7 +63,6 @@ const SignUp = ({ setWarnings }) => {
 		const data = await usersSignUp(form.email, form.password, form.username);
 		if (data.status === 200) {
 			setInterceptors(data.data.accessToken);
-			// const decoded = jwt_decode(data.data.accessToken);
 			setCurrentUserSignin(true);
 			return;
 		}
@@ -130,25 +124,21 @@ const SignIn = ({ setWarnings }) => {
 		email: "",
 		password: "",
 	});
-	const currUser = useCurrentUser();
 	const setCurrentUserSignin = useSetCurrentUserSignin();
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		// try {
-		// 	const data = await usersSignIn(form.email, form.password);
-		// 	if (data.status === 200) {
-		// 		setInterceptors(data.data.accessToken);
-		// 		// const decoded = jwt_decode(data.data.accessToken);
-		// 		setCurrentUserSignin(true);
-		// 		return;
-		// 	}
-		// 	setWarnings(data.errors);
-		// } catch (err) {
-		// 	console.error(err);
-		// }
-		const data = await usersSignIn(form.email, form.password);
-		console.log(data);
+		try {
+			const data = await usersSignIn(form.email, form.password);
+			if (data.status === 200) {
+				setInterceptors(data.data.accessToken);
+				setCurrentUserSignin(true);
+				return;
+			}
+			setWarnings(data.errors);
+		} catch (err) {
+			console.error(err);
+		}
 	};
 
 	return (
