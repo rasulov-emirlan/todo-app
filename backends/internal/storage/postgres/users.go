@@ -10,10 +10,12 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
+	"github.com/rasulov-emirlan/todo-app/backends/pkg/logging"
 )
 
 type usersRepository struct {
 	conn *pgxpool.Pool
+	log *logging.Logger
 }
 
 func (r *usersRepository) Create(ctx context.Context, email, hashedPassword, username string) (id string, err error) {
@@ -26,6 +28,9 @@ func (r *usersRepository) Create(ctx context.Context, email, hashedPassword, use
 		return "", err
 	}
 
+	defer r.log.Sync()
+	r.log.Debug("usersRepository: Create()", logging.String("sql", sql))
+
 	conn, err := r.conn.Acquire(ctx)
 	if err != nil {
 		return "", err
@@ -34,6 +39,7 @@ func (r *usersRepository) Create(ctx context.Context, email, hashedPassword, use
 
 	err = conn.QueryRow(ctx, sql, args...).Scan(&id)
 	if err != nil {
+		r.log.Debug("usersRepository: Create()", logging.String("error", err.Error()))
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == "23505" {
@@ -50,6 +56,9 @@ func (r *usersRepository) Get(ctx context.Context, id string) (user users.User, 
 	if err != nil {
 		return user, err
 	}
+
+	defer r.log.Sync()
+	r.log.Debug("usersRepository: Get()", logging.String("sql", sql))
 
 	conn, err := r.conn.Acquire(ctx)
 	if err != nil {
@@ -72,6 +81,9 @@ func (r *usersRepository) GetByEmail(ctx context.Context, email string) (user us
 		return user, err
 	}
 
+	defer r.log.Sync()
+	r.log.Debug("usersRepository: GetByEmail()", logging.String("sql", sql))
+
 	conn, err := r.conn.Acquire(ctx)
 	if err != nil {
 		return user, err
@@ -84,6 +96,7 @@ func (r *usersRepository) GetByEmail(ctx context.Context, email string) (user us
 	)
 
 	if err == pgx.ErrNoRows {
+		r.log.Debug("usersRepository: GetByEmail()", logging.String("error", err.Error()))
 		return user, users.ErrNoSuchUser
 	}
 
@@ -101,6 +114,9 @@ func (r *usersRepository) Update(ctx context.Context, inp users.UpdateInput) (er
 		return err
 	}
 
+	defer r.log.Sync()
+	r.log.Debug("usersRepository: Update()", logging.String("sql", sql))
+
 	conn, err := r.conn.Acquire(ctx)
 	if err != nil {
 		return err
@@ -117,6 +133,10 @@ func (r *usersRepository) Delete(ctx context.Context, id string) (err error) {
 	if err != nil {
 		return err
 	}
+
+	defer r.log.Sync()
+	r.log.Debug("usersRepository: Delete()", logging.String("sql", sql))
+
 
 	conn, err := r.conn.Acquire(ctx)
 	if err != nil {

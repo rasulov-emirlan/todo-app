@@ -7,6 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/storage/postgres/migrations"
+	"github.com/rasulov-emirlan/todo-app/backends/pkg/logging"
 )
 
 type Repository struct {
@@ -16,7 +17,7 @@ type Repository struct {
 	todosRepository *todosRepository
 }
 
-func NewRepository(url string, withMigrations bool) (*Repository, error) {
+func NewRepository(url string, withMigrations bool, logger *logging.Logger) (*Repository, error) {
 	conn, err := pgxpool.Connect(context.Background(), url)
 	if err != nil {
 		for i := 0; i < 60; i++ {
@@ -41,7 +42,7 @@ func NewRepository(url string, withMigrations bool) (*Repository, error) {
 	}
 	return &Repository{
 		conn:            conn,
-		usersRepository: &usersRepository{conn},
+		usersRepository: &usersRepository{conn: conn, log: logger},
 		todosRepository: &todosRepository{conn},
 	}, nil
 }

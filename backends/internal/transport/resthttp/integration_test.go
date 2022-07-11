@@ -30,6 +30,7 @@ const (
 var (
 	postgresHostPort = "database:5432"
 
+	logger *logging.Logger
 	store   *postgres.Repository
 	cleanup func()
 )
@@ -38,7 +39,8 @@ func TestMain(m *testing.M) {
 	if testMain(m) != 0 {
 		os.Exit(1)
 	}
-	logger, err := logging.NewLogger("debug", "stdout")
+	err := error(nil)
+	logger, err = logging.NewLogger("debug", "stdout")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -101,7 +103,7 @@ func setupDB(pool *dockertest.Pool) func() {
 
 	if err = pool.Retry(func() error {
 		err := error(nil)
-		store, err = postgres.NewRepository(dburl, true)
+		store, err = postgres.NewRepository(dburl, true, logger)
 		if err != nil {
 			return err
 		}

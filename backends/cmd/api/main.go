@@ -52,7 +52,7 @@ func main() {
 		Host:   config.Database.Host + ":" + config.Database.Port,
 		Path:   config.Database.Name,
 	}
-	store, err := postgres.NewRepository(url.String()+"?sslmode=disable", *flagWithMigrations)
+	store, err := postgres.NewRepository(url.String()+"?sslmode=disable", *flagWithMigrations, logger)
 	if err != nil {
 		log.Fatal(err)
 	}
