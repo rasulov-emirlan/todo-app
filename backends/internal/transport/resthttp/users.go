@@ -152,7 +152,7 @@ func (s *server) UsersSignUp(ctx *gin.Context) {
 		},
 	)
 	if err != nil {
-		errs := s.usersService.UnpackValidationErrors(err)
+		errs := s.validator.UnpackErrors(err)
 		resp := []string{err.Error()}
 		if errs != nil {
 			resp = errs

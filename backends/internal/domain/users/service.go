@@ -8,12 +8,10 @@ import (
 
 	// TODO: do something with all these imports
 	// maybe create a wrapper for validation, jwt creation and hashing
-	"github.com/go-playground/locales/en"
-	ut "github.com/go-playground/universal-translator"
-	"github.com/go-playground/validator/v10"
-	en_translations "github.com/go-playground/validator/v10/translations/en"
+
 	"github.com/golang-jwt/jwt"
 	"github.com/rasulov-emirlan/todo-app/backends/pkg/logging"
+	"github.com/rasulov-emirlan/todo-app/backends/pkg/validation"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -35,99 +33,30 @@ type (
 
 		Update(ctx context.Context, inp UpdateInput) error
 		Delete(ctx context.Context, id string) error
-
-		UnpackValidationErrors(err error) []string
 	}
 
 	service struct {
 		repo       Repository
-		validation *validator.Validate
-		trans      ut.Translator
+		validation *validation.Validator
 		log        *logging.Logger
 
 		secretKey []byte
 	}
 )
 
-func NewService(repo Repository, logger *logging.Logger, secretKey []byte) (Service, error) {
-	en := en.New()
-	uni := ut.New(en, en)
-
-	trans, _ := uni.GetTranslator("en")
-	v := validator.New()
-	en_translations.RegisterDefaultTranslations(v, trans)
-
-	err := v.RegisterTranslation("password", trans,
-		func(ut ut.Translator) error {
-			return ut.Add("password", "{0} can't be shorter than 6 characters or longer then 128", true)
-		},
-		func(ut ut.Translator, fe validator.FieldError) string {
-			t, err := ut.T("password", fe.Field())
-			if err != nil {
-				logger.Fatal("Could not initialize users serivice", logging.String("error", err.Error()))
-			}
-			return t
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-	err = v.RegisterTranslation("username", trans,
-		func(ut ut.Translator) error {
-			return ut.Add("username", "{0} can't be shorter than 6 characters or longer then 20", true)
-		},
-		func(ut ut.Translator, fe validator.FieldError) string {
-			t, err := ut.T("username", fe.Field())
-			if err != nil {
-				logger.Fatal("Could not initialize users serivice", logging.String("error", err.Error()))
-			}
-			return t
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	err = v.RegisterValidation("password", func(fl validator.FieldLevel) bool {
-		l := len(fl.Field().String())
-		return l >= 6 && l <= 128
-	})
-	if err != nil {
-		return nil, err
-	}
-	err = v.RegisterValidation("username", func(fl validator.FieldLevel) bool {
-		l := len(fl.Field().String())
-		return l >= 6 && l <= 20
-	})
-	if err != nil {
-		return nil, err
-	}
-
+func NewService(repo Repository, logger *logging.Logger, validator *validation.Validator, secretKey []byte) (Service, error) {
 	return &service{
 		repo:       repo,
 		log:        logger,
-		validation: v,
-		trans:      trans,
+		validation: validator,
 		secretKey:  secretKey,
 	}, nil
-}
-
-func (s *service) UnpackValidationErrors(err error) []string {
-	v, ok := err.(validator.ValidationErrors)
-	if !ok {
-		return nil
-	}
-	errs := make([]string, 0, len(v))
-	for _, vv := range v {
-		errs = append(errs, vv.Translate(s.trans))
-	}
-	return errs
 }
 
 func (s *service) SignUp(ctx context.Context, inp SignUpInput) (SignInOutput, error) {
 	defer s.log.Sync()
 	s.log.Info("users: SignUp(): start")
-	if err := s.validation.Struct(inp); err != nil {
+	if err := s.validation.ValidateStruct(inp); err != nil {
 		s.log.Debug(
 			"users: SignUp(): invalid info was provided",
 			// make sure not to log passwords anywhere

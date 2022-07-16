@@ -18,6 +18,7 @@ import (
 	"github.com/rasulov-emirlan/todo-app/backends/internal/storage/postgres"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp"
 	"github.com/rasulov-emirlan/todo-app/backends/pkg/logging"
+	"github.com/rasulov-emirlan/todo-app/backends/pkg/validation"
 )
 
 const (
@@ -30,7 +31,7 @@ const (
 var (
 	postgresHostPort = "database:5432"
 
-	logger *logging.Logger
+	logger  *logging.Logger
 	store   *postgres.Repository
 	cleanup func()
 )
@@ -44,13 +45,14 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	uService, err := users.NewService(store.Users(), logger, []byte("secretkey"))
+	validator := validation.NewValidator()
+	uService, err := users.NewService(store.Users(), logger, validator, []byte("secretkey"))
 	if err != nil {
 		log.Fatal(err)
 	}
 	tService := todos.NewService(store.Todos(), store.Users(), logger)
 	srvr := resthttp.NewServer(
-		[]string{"*"}, ":8080", time.Second*15, time.Second*15, logger, uService, tService)
+		[]string{"*"}, ":8080", time.Second*15, time.Second*15, logger, validator, uService, tService)
 	go func() {
 		if err = srvr.Run(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Println("could not start server due to error: ", err)

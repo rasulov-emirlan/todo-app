@@ -51,13 +51,18 @@ import (
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/todos"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
 	"github.com/rasulov-emirlan/todo-app/backends/pkg/logging"
+	"github.com/rasulov-emirlan/todo-app/backends/pkg/validation"
 )
 
 type server struct {
 	server  *http.Server
 	address string
-	logger  *logging.Logger
 
+	// utility dependencies
+	logger    *logging.Logger
+	validator *validation.Validator
+
+	// domain logic dependencies
 	usersService users.Service
 	todosService todos.Service
 }
@@ -68,6 +73,7 @@ func NewServer(
 	rTimeout time.Duration,
 	wTimeout time.Duration,
 	logger *logging.Logger,
+	validator *validation.Validator,
 	usersService users.Service,
 	todosService todos.Service,
 ) *server {
@@ -79,6 +85,7 @@ func NewServer(
 		},
 		address:      address,
 		logger:       logger,
+		validator:    validator,
 		usersService: usersService,
 		todosService: todosService,
 	}
@@ -97,18 +104,17 @@ var swagger embed.FS
 
 func (s *server) setRoutes(router *gin.Engine) {
 	router.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"http://localhost:3000"},
-		AllowMethods: []string{"*"},
-		AllowHeaders: []string{"*", "content-type"},
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"*"},
+		AllowHeaders:     []string{"*", "content-type"},
 		AllowCredentials: true,
-		AllowWildcard: true,
+		AllowWildcard:    true,
 	}))
 
 	router.Use(gin.Recovery())
 	router.Use(gin.Logger())
 	router.Use(gzip.Gzip(gzip.BestCompression))
 	api := router.Group("api")
-
 
 	dir, err := fs.Sub(swagger, "swaggerui")
 	if err != nil {
