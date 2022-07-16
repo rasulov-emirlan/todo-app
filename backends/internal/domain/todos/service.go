@@ -2,10 +2,10 @@ package todos
 
 import (
 	"context"
-	"time"
 
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
 	"github.com/rasulov-emirlan/todo-app/backends/pkg/logging"
+	"github.com/rasulov-emirlan/todo-app/backends/pkg/validation"
 )
 
 type (
@@ -40,29 +40,25 @@ type (
 	}
 
 	service struct {
-		repo  Repository
-		uRepo UsersRepository
-		log   *logging.Logger
+		repo      Repository
+		uRepo     UsersRepository
+		log       *logging.Logger
+		validator *validation.Validator
 	}
 )
 
-func NewService(repo Repository, uRepo UsersRepository, logger *logging.Logger) Service {
+func NewService(repo Repository, uRepo UsersRepository, logger *logging.Logger, validator *validation.Validator) Service {
 	return &service{
-		repo:  repo,
-		uRepo: uRepo,
-		log:   logger,
+		repo:      repo,
+		uRepo:     uRepo,
+		log:       logger,
+		validator: validator,
 	}
 }
 
 func (s *service) Create(ctx context.Context, inp CreateInput) (id string, err error) {
-	if len(inp.Title) < 6 || len(inp.Title) > 100 {
-		return "", ErrInvalidTitle
-	}
-	if len(inp.Body) > 2000 {
-		return "", ErrInvalidBody
-	}
-	if inp.Deadline.Before(time.Now()) {
-		return "", ErrInvalidDeadline
+	if err := s.validator.ValidateStruct(inp); err != nil {
+		return "", err
 	}
 	id, err = s.repo.Create(ctx, inp)
 	if err != nil {
@@ -94,21 +90,15 @@ func (s *service) GetAll(ctx context.Context, config GetAllInput) (todos []Todo,
 // maybe a map[customTypeForFields]any
 // would be a good solution...or maybe it would be so bad
 func (s *service) Update(ctx context.Context, userID string, inp UpdateInput) error {
+	if err := s.validator.ValidateStruct(inp); err != nil {
+		return err
+	}
 	ok, err := s.isAllowed(ctx, userID, inp.ID)
 	if err != nil {
 		return err
 	}
 	if !ok {
 		return ErrNotAllowed
-	}
-	if len(inp.Title) < 6 || len(inp.Title) > 100 {
-		return ErrInvalidTitle
-	}
-	if len(inp.Body) > 2000 {
-		return ErrInvalidBody
-	}
-	if inp.Deadline.Before(time.Now()) {
-		return ErrInvalidDeadline
 	}
 	err = s.repo.Update(ctx, inp)
 	if err != nil {

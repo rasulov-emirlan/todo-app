@@ -22,7 +22,7 @@ var (
 	flagConfigName     = flag.String("config", "", "This flag accepts a path to .env file. If not provided we will get our configs from enviorment variables or we will use default values.")
 	flagWithMigrations = flag.Bool("migrations", false, "If 'true' is given then migrations will be ran automaticaly on start of the app")
 	// TODO: this flag should be used to start our server in debug mode
-	// and enable panics in our services
+	// and enable panics in our services. Also make jwts live longer???
 	flagIsDevMode = flag.Bool("isDev", false, "If 'true' all of our services will start in development mode. Our keys will live longer. And our logs will be more informative")
 )
 
@@ -78,6 +78,7 @@ func main() {
 		store.Todos(),
 		store.Users(),
 		logger,
+		validator,
 	)
 
 	logger.Info("Services initialized")

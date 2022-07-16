@@ -147,6 +147,10 @@ func (s *server) TodosCreate(ctx *gin.Context) {
 		Deadline: req.Deadline,
 	})
 	if err != nil {
+		if errs := s.validator.UnpackErrors(err); errs != nil {
+			respond(ctx, http.StatusBadRequest, nil, errs)
+			return
+		}
 		respond(ctx, http.StatusInternalServerError, nil, []string{err.Error()})
 		return
 	}
@@ -221,6 +225,10 @@ func (s *server) TodosUpdate(ctx *gin.Context) {
 		Deadline: req.Deadline,
 	})
 	if err != nil {
+		if errs := s.validator.UnpackErrors(err); errs != nil {
+			respond(ctx, http.StatusBadRequest, nil, errs)
+			return
+		}
 		respond(ctx, http.StatusInternalServerError, nil, []string{err.Error()})
 		return
 	}
