@@ -1,5 +1,5 @@
-import Auth from "./pages/Auth";
-import Todos from "./pages/Todos";
+import Auth from "./pages/Auth/Auth";
+import Todos from "./pages/Home/Todos";
 
 import { Route, Routes } from "react-router-dom";
 import { useCurrentUser } from "./contexts/UserContext";

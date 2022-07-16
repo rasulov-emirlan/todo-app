@@ -4,15 +4,15 @@ import "github.com/golang-jwt/jwt"
 
 type (
 	SignUpInput struct {
-		Username string `validate:"required,gt=6,lt=20"`
 		Email    string `validate:"required,email"`
+		Username string `validate:"required,gt=6,lt=20"`
 		Password string `validate:"required,gt=6,lt=128"`
 	}
 
 	UpdateInput struct {
 		ID       string `validate:"required"`
-		Username string `validate:"username"`
-		Password string `validate:"password"`
+		Username string `validate:"required,gt=6,lt=20"`
+		Password string `validate:"required,gt=6,lt=128"`
 	}
 
 	SignInOutput struct {

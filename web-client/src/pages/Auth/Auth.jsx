@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { setInterceptors } from "../api";
-import { usersSignIn, usersSignUp } from "../api/user";
-import { useSetCurrentUserSignin } from "../contexts/UserContext";
+import { setInterceptors } from "../../api";
+import { usersSignIn, usersSignUp } from "../../api/user";
+import { useSetCurrentUserSignin } from "../../contexts/UserContext";
 
 const Auth = () => {
 	// modes:
