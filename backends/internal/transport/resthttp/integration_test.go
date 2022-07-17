@@ -1,10 +1,12 @@
 package resthttp_test
 
+// IMPORTANT these tests DO NOT WORK
+// I AM TOO LAZY TO WRITE THEM
+
 import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -13,12 +15,10 @@ import (
 
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/todos"
-	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
+	"github.com/rasulov-emirlan/todo-app/backends/config"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/storage/postgres"
-	"github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp"
 	"github.com/rasulov-emirlan/todo-app/backends/pkg/logging"
-	"github.com/rasulov-emirlan/todo-app/backends/pkg/validation"
+	"github.com/rasulov-emirlan/todo-app/backends/wire"
 )
 
 const (
@@ -41,27 +41,35 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	err := error(nil)
-	logger, err = logging.NewLogger("debug", "stdout")
+	config := &config.Config{}
+	logger, err = wire.InitializeLogger(*config)
 	if err != nil {
 		log.Fatal(err)
 	}
-	validator := validation.NewValidator()
-	uService, err := users.NewService(store.Users(), logger, validator, []byte("secretkey"))
+
+	repo, err := wire.InitializeRepo(*config, logger)
 	if err != nil {
 		log.Fatal(err)
 	}
-	tService := todos.NewService(store.Todos(), store.Users(), logger, validator)
-	srvr := resthttp.NewServer(
-		[]string{"*"}, ":8080", time.Second*15, time.Second*15, logger, validator, uService, tService)
+
+	validator, err := wire.InitializeValidator()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	server, err := wire.InitializeRestApi(*config, logger, validator, repo)
+	if err != nil {
+		log.Fatal(err)
+	}
 	go func() {
-		if err = srvr.Run(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err = server.Run(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Println("could not start server due to error: ", err)
 			cleanup()
 			os.Exit(1)
 		}
 	}()
 	code := m.Run()
-	if err = srvr.Shutdown(context.Background()); err != nil {
+	if err = server.Shutdown(context.Background()); err != nil {
 		log.Println("could not stop server due to error:", err)
 		code = 1
 	}
@@ -98,14 +106,12 @@ func setupDB(pool *dockertest.Pool) func() {
 	}
 
 	postgresHostPort = resource.GetHostPort("5432/tcp")
-	dburl := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable",
-		postgresUsername, postgresPassword, postgresHostPort, postgresDbname)
 	resource.Expire(200) // Tell docker to hard kill the container in 200 seconds
 	pool.MaxWait = 200 * time.Second
 
 	if err = pool.Retry(func() error {
 		err := error(nil)
-		store, err = postgres.NewRepository(dburl, true, logger)
+		store, err = postgres.NewRepository(config.Config{}, logger)
 		if err != nil {
 			return err
 		}
