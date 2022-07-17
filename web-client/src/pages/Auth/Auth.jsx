@@ -12,19 +12,19 @@ const Auth = () => {
 
 	return (
 		<div className='w-full h-full min-h-screen p-2'>
-			<div className='bg-white p-2 rounded-md min-h-[400px]'>
+			<div className='bg-mediumGray p-2 rounded-md min-h-[400px]'>
 				<div
 					onClick={() => setMode((prev) => (prev === 1 ? 2 : 1))}
-					className=' bg-blue-500 rounded-md p-2 max-w-[800px] mx-auto'>
+					className=' bg-lightGray rounded-md p-2 max-w-[800px] mx-auto'>
 					<button
-						className={`w-1/2 p-2 rounded-md transition-all ${
-							mode === 1 ? "bg-white" : "text-white"
+						className={`w-1/2 p-2 rounded-md transition-all text-lightWhite ${
+							mode === 1 && "bg-mediumGray"
 						}`}>
 						Sign up
 					</button>
 					<button
-						className={`w-1/2 p-2 rounded-md transition-all ${
-							mode === 2 ? "bg-white" : "text-white"
+						className={`w-1/2 p-2 rounded-md transition-all text-lightWhite ${
+							mode === 2 && "bg-mediumGray"
 						}`}>
 						Sign in
 					</button>
@@ -73,7 +73,7 @@ const SignUp = ({ setWarnings }) => {
 	return (
 		<form className='flex flex-col items-center gap-2 mt-4'>
 			<input
-				className='max-w-[800px] p-2 w-full border-blue-500 border rounded-md'
+				className='max-w-[800px] p-2 w-full outline-none rounded-md'
 				type='email'
 				value={form.email}
 				onChange={(e) =>
@@ -82,7 +82,7 @@ const SignUp = ({ setWarnings }) => {
 				placeholder='email...'
 			/>
 			<input
-				className='max-w-[800px] p-2 w-full border-blue-500 border rounded-md'
+				className='max-w-[800px] p-2 w-full outline-none rounded-md'
 				type='password'
 				value={form.password}
 				onChange={(e) =>
@@ -91,7 +91,7 @@ const SignUp = ({ setWarnings }) => {
 				placeholder='password...'
 			/>
 			<input
-				className='max-w-[800px] p-2 w-full border-blue-500 border rounded-md'
+				className='max-w-[800px] p-2 w-full outline-none rounded-md'
 				type='password'
 				value={form.passwordRepeat}
 				onChange={(e) =>
@@ -100,7 +100,7 @@ const SignUp = ({ setWarnings }) => {
 				placeholder='passwprd repeat...'
 			/>
 			<input
-				className='max-w-[800px] p-2 w-full border-blue-500 border rounded-md'
+				className='max-w-[800px] p-2 w-full outline-none rounded-md'
 				type='text'
 				value={form.username}
 				onChange={(e) =>
@@ -113,7 +113,7 @@ const SignUp = ({ setWarnings }) => {
 				onClick={(e) => handleSubmit(e)}
 				type='submit'
 				value='Sign Up'
-				className='bg-blue-500 w-1/3 max-w-[500px] p-2 rounded-md text-white shadow-mdmax-w-[800px]'
+				className='bg-lightGray hover:bg-gray-600 border-gray-700 shadow-md cursor-pointer w-1/3 max-w-[500px] p-2 rounded-md text-white shadow-mdmax-w-[800px]'
 			/>
 		</form>
 	);
