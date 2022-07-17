@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"log"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -10,10 +9,12 @@ import (
 	"github.com/lib/pq"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/todos"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
+	"github.com/rasulov-emirlan/todo-app/backends/pkg/logging"
 )
 
 type todosRepository struct {
 	conn *pgxpool.Pool
+	log  *logging.Logger
 }
 
 func (r *todosRepository) Create(ctx context.Context, inp todos.CreateInput) (id string, err error) {
@@ -26,6 +27,9 @@ func (r *todosRepository) Create(ctx context.Context, inp todos.CreateInput) (id
 	if err != nil {
 		return "", err
 	}
+
+	defer r.log.Sync()
+	r.log.Debug("todosRepository: Create()", logging.String("sql", sql))
 
 	conn, err := r.conn.Acquire(ctx)
 	if err != nil {
@@ -51,7 +55,9 @@ func (r *todosRepository) Get(ctx context.Context, id string) (todo todos.Todo, 
 	if err != nil {
 		return todo, err
 	}
-	log.Println(sql)
+
+	defer r.log.Sync()
+	r.log.Debug("todosRepository: Get()", logging.String("sql", sql))
 
 	conn, err := r.conn.Acquire(ctx)
 	if err != nil {
@@ -114,6 +120,9 @@ func (r *todosRepository) GetAll(ctx context.Context, config todos.GetAllInput) 
 		return nil, err
 	}
 
+	defer r.log.Sync()
+	r.log.Debug("todosRepository: GetAll()", logging.String("sql", sql))
+
 	conn, err := r.conn.Acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -169,6 +178,9 @@ func (r *todosRepository) Update(ctx context.Context, inp todos.UpdateInput) err
 		return err
 	}
 
+	defer r.log.Sync()
+	r.log.Debug("todosRepository: Update()", logging.String("sql", sql))
+
 	conn, err := r.conn.Acquire(ctx)
 	if err != nil {
 		return err
@@ -188,6 +200,9 @@ func (r *todosRepository) MarkAsComplete(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
+
+	defer r.log.Sync()
+	r.log.Debug("todosRepository: MarkAsComplete()", logging.String("sql", sql))
 
 	conn, err := r.conn.Acquire(ctx)
 	if err != nil {
@@ -209,6 +224,9 @@ func (r *todosRepository) MarkAsNotComplete(ctx context.Context, id string) erro
 		return err
 	}
 
+	defer r.log.Sync()
+	r.log.Debug("todosRepository: MarkAsNotComplete()", logging.String("sql", sql))
+
 	conn, err := r.conn.Acquire(ctx)
 	if err != nil {
 		return err
@@ -227,6 +245,9 @@ func (r *todosRepository) Delete(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
+
+	defer r.log.Sync()
+	r.log.Debug("todosRepository: Delete()", logging.String("sql", sql))
 
 	conn, err := r.conn.Acquire(ctx)
 	if err != nil {

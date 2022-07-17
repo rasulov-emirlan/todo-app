@@ -43,7 +43,7 @@ func NewRepository(url string, withMigrations bool, logger *logging.Logger) (*Re
 	return &Repository{
 		conn:            conn,
 		usersRepository: &usersRepository{conn: conn, log: logger},
-		todosRepository: &todosRepository{conn},
+		todosRepository: &todosRepository{conn: conn, log: logger},
 	}, nil
 }
 

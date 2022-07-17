@@ -57,11 +57,23 @@ func NewService(repo Repository, uRepo UsersRepository, logger *logging.Logger, 
 }
 
 func (s *service) Create(ctx context.Context, inp CreateInput) (id string, err error) {
+	defer s.log.Sync()
+	s.log.Info("todos: Create(): start")
+
 	if err := s.validator.ValidateStruct(inp); err != nil {
+		s.log.Debug(
+			"todos: Create(): validation failed",
+			logging.String("error", err.Error()),
+		)
 		return "", err
 	}
+
 	id, err = s.repo.Create(ctx, inp)
 	if err != nil {
+		s.log.Debug(
+			"todos: Create(): could not create todo in db",
+			logging.String("error", err.Error()),
+		)
 		return "", err
 	}
 
@@ -69,8 +81,15 @@ func (s *service) Create(ctx context.Context, inp CreateInput) (id string, err e
 }
 
 func (s *service) Get(ctx context.Context, id string) (todo Todo, err error) {
+	defer s.log.Sync()
+	s.log.Info("todos: Get(): start")
+
 	todo, err = s.repo.Get(ctx, id)
 	if err != nil {
+		s.log.Debug(
+			"todos: Get(): could not get todo from db",
+			logging.String("error", err.Error()),
+		)
 		return todo, err
 	}
 
@@ -78,8 +97,15 @@ func (s *service) Get(ctx context.Context, id string) (todo Todo, err error) {
 }
 
 func (s *service) GetAll(ctx context.Context, config GetAllInput) (todos []Todo, err error) {
+	defer s.log.Sync()
+	s.log.Info("todos: GetAll(): start")
+
 	todos, err = s.repo.GetAll(ctx, config)
 	if err != nil {
+		s.log.Debug(
+			"todos: GetAll(): could not get todos from db",
+			logging.String("error", err.Error()),
+		)
 		return todos, err
 	}
 
@@ -90,18 +116,40 @@ func (s *service) GetAll(ctx context.Context, config GetAllInput) (todos []Todo,
 // maybe a map[customTypeForFields]any
 // would be a good solution...or maybe it would be so bad
 func (s *service) Update(ctx context.Context, userID string, inp UpdateInput) error {
+	defer s.log.Sync()
+	s.log.Info("todos: Update(): start")
+
 	if err := s.validator.ValidateStruct(inp); err != nil {
+		s.log.Debug(
+			"todos: Update(): validation failed",
+			logging.String("error", err.Error()),
+		)
 		return err
 	}
+
 	ok, err := s.isAllowed(ctx, userID, inp.ID)
 	if err != nil {
+		s.log.Debug(
+			"todos: Update(): isAllowed returned error",
+			logging.String("error", err.Error()),
+		)
 		return err
 	}
+
 	if !ok {
+		s.log.Debug(
+			"todos: Update(): user is not allowed",
+			logging.String("userID", userID),
+		)
 		return ErrNotAllowed
 	}
+
 	err = s.repo.Update(ctx, inp)
 	if err != nil {
+		s.log.Debug(
+			"todos: Update(): could not update todo in db",
+			logging.String("error", err.Error()),
+		)
 		return err
 	}
 
@@ -109,15 +157,31 @@ func (s *service) Update(ctx context.Context, userID string, inp UpdateInput) er
 }
 
 func (s *service) MarkAsComplete(ctx context.Context, userID, id string) error {
+	defer s.log.Sync()
+	s.log.Info("todos: MarkAsComplete(): start")
+
 	ok, err := s.isAllowed(ctx, userID, id)
 	if err != nil {
+		s.log.Debug(
+			"todos: MarkAsComplete(): isAllowed returned error",
+			logging.String("error", err.Error()),
+		)
 		return err
 	}
 	if !ok {
+		s.log.Debug(
+			"todos: MarkAsComplete(): user is not allowed",
+			logging.String("userID", userID),
+		)
 		return ErrNotAllowed
 	}
+
 	err = s.repo.MarkAsComplete(ctx, id)
 	if err != nil {
+		s.log.Debug(
+			"todos: MarkAsComplete(): could not mark todo as complete in db",
+			logging.String("error", err.Error()),
+		)
 		return err
 	}
 
@@ -125,15 +189,31 @@ func (s *service) MarkAsComplete(ctx context.Context, userID, id string) error {
 }
 
 func (s *service) MarkAsNotComplete(ctx context.Context, userID, id string) error {
+	defer s.log.Sync()
+	s.log.Info("todos: MarkAsNotComplete(): start")
+
 	ok, err := s.isAllowed(ctx, userID, id)
 	if err != nil {
+		s.log.Debug(
+			"todos: MarkAsNotComplete(): isAllowed returned error",
+			logging.String("error", err.Error()),
+		)
 		return err
 	}
 	if !ok {
+		s.log.Debug(
+			"todos: MarkAsNotComplete(): user is not allowed",
+			logging.String("userID", userID),
+		)
 		return ErrNotAllowed
 	}
+
 	err = s.repo.MarkAsNotComplete(ctx, id)
 	if err != nil {
+		s.log.Debug(
+			"todos: MarkAsNotComplete(): could not mark todo as not complete in db",
+			logging.String("error", err.Error()),
+		)
 		return err
 	}
 
@@ -141,15 +221,31 @@ func (s *service) MarkAsNotComplete(ctx context.Context, userID, id string) erro
 }
 
 func (s *service) Delete(ctx context.Context, userID, id string) error {
+	defer s.log.Sync()
+	s.log.Info("todos: Delete(): start")
+
 	ok, err := s.isAllowed(ctx, userID, id)
 	if err != nil {
+		s.log.Debug(
+			"todos: Delete(): isAllowed returned error",
+			logging.String("error", err.Error()),
+		)
 		return err
 	}
 	if !ok {
+		s.log.Debug(
+			"todos: Delete(): user is not allowed",
+			logging.String("userID", userID),
+		)
 		return ErrNotAllowed
 	}
+
 	err = s.repo.Delete(ctx, id)
 	if err != nil {
+		s.log.Debug(
+			"todos: Delete(): could not delete todo from db",
+			logging.String("error", err.Error()),
+		)
 		return err
 	}
 
