@@ -123,7 +123,7 @@ type (
 //       200: respTodosCreate
 //       400: stdResponse
 //       422: stdResponse
-func (s *server) TodosCreate(ctx *gin.Context) {
+func (s *Server) TodosCreate(ctx *gin.Context) {
 	user, err := getUserData(ctx)
 	if err != nil {
 		respond(ctx, http.StatusUnauthorized, nil, []string{err.Error()})
@@ -196,7 +196,7 @@ func (s *server) TodosCreate(ctx *gin.Context) {
 //       200: stdResponse
 //       400: stdResponse
 //       422: stdResponse
-func (s *server) TodosUpdate(ctx *gin.Context) {
+func (s *Server) TodosUpdate(ctx *gin.Context) {
 	u, err := getUserData(ctx)
 	if err != nil {
 		respond(ctx, http.StatusUnauthorized, nil, []string{err.Error()})
@@ -267,7 +267,7 @@ func (s *server) TodosUpdate(ctx *gin.Context) {
 //       200: todo
 //       400: stdResponse
 //       422: stdResponse
-func (s *server) TodosGet(ctx *gin.Context) {
+func (s *Server) TodosGet(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {
 		respond(ctx, http.StatusBadRequest, nil, []string{ErrParamNotProvided.Error()})
@@ -338,7 +338,7 @@ var sortVariants = map[string]todos.SortBy{
 //       200: []todo
 //       400: stdResponse
 //       422: stdResponse
-func (s *server) TodosGetAll(ctx *gin.Context) {
+func (s *Server) TodosGetAll(ctx *gin.Context) {
 	user, err := getUserData(ctx)
 	if err != nil {
 		respond(ctx, http.StatusUnauthorized, nil, []string{err.Error()})
@@ -428,7 +428,7 @@ func (s *server) TodosGetAll(ctx *gin.Context) {
 //     Responses:
 //       400: stdResponse
 //       422: stdResponse
-func (s *server) TodosMarkComplete(ctx *gin.Context) {
+func (s *Server) TodosMarkComplete(ctx *gin.Context) {
 	u, err := getUserData(ctx)
 	if err != nil {
 		respond(ctx, http.StatusUnauthorized, nil, []string{err.Error()})
@@ -478,7 +478,7 @@ func (s *server) TodosMarkComplete(ctx *gin.Context) {
 //     Responses:
 //       400: stdResponse
 //       422: stdResponse
-func (s *server) TodosMarkNotComplete(ctx *gin.Context) {
+func (s *Server) TodosMarkNotComplete(ctx *gin.Context) {
 	u, err := getUserData(ctx)
 	if err != nil {
 		respond(ctx, http.StatusUnauthorized, nil, []string{err.Error()})
@@ -527,7 +527,7 @@ func (s *server) TodosMarkNotComplete(ctx *gin.Context) {
 //     Responses:
 //       400: stdResponse
 //       422: stdResponse
-func (s *server) TodosDelete(ctx *gin.Context) {
+func (s *Server) TodosDelete(ctx *gin.Context) {
 	u, err := getUserData(ctx)
 	if err != nil {
 		respond(ctx, http.StatusUnauthorized, nil, []string{err.Error()})

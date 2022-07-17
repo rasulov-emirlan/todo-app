@@ -3,19 +3,13 @@ package main
 import (
 	"flag"
 	"log"
-	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/rasulov-emirlan/todo-app/backends/config"
-	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/todos"
-	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
-	"github.com/rasulov-emirlan/todo-app/backends/internal/storage/postgres"
-	"github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp"
 	"github.com/rasulov-emirlan/todo-app/backends/pkg/logging"
-	"github.com/rasulov-emirlan/todo-app/backends/pkg/validation"
+	"github.com/rasulov-emirlan/todo-app/backends/wire"
 )
 
 var (
@@ -33,69 +27,28 @@ func main() {
 		log.Fatal(err)
 	}
 
-	logger, err := logging.NewLogger(
-		config.Log.Level,
-		config.Log.Output,
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer func() {
-		if err := logger.Sync(); err != nil {
-			log.Fatal(err)
-		}
-		if err := logger.Close(); err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	logger.Info("Logger initialized")
-
-	url := url.URL{
-		Scheme: "postgres",
-		User:   url.UserPassword(config.Database.User, config.Database.Pass),
-		Host:   config.Database.Host + ":" + config.Database.Port,
-		Path:   config.Database.Name,
-	}
-	store, err := postgres.NewRepository(url.String()+"?sslmode=disable", *flagWithMigrations, logger)
+	logger, err := wire.InitializeLogger(*config)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	logger.Info("Store initialized")
-	validator := validation.NewValidator()
-
-	usersService, err := users.NewService(
-		store.Users(),
-		logger,
-		validator,
-		[]byte(config.JWTsecret),
-	)
+	repo, err := wire.InitializeRepo(*config, logger)
 	if err != nil {
-		logger.Fatal("Could not initialize usersService", logging.String("error", err.Error()))
+		log.Fatal(err)
 	}
-	todosService := todos.NewService(
-		store.Todos(),
-		store.Users(),
-		logger,
-		validator,
-	)
 
-	logger.Info("Services initialized")
+	validator, err := wire.InitializeValidator()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	srvr := resthttp.NewServer(
-		[]string{"*"},
-		config.Port, time.Second*15, time.Second*15,
-		logger,
-		validator,
-		usersService,
-		todosService,
-	)
-
-	logger.Info("Server initialized")
+	server, err := wire.InitializeRestApi(*config, logger, validator, repo)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	go func() {
-		err := srvr.Run()
+		err := server.Run()
 		if err != nil {
 			logger.Fatal("Server stopped", logging.String("error", err.Error()))
 		}
@@ -107,7 +60,7 @@ func main() {
 	<-quit
 
 	logger.Info("Gracefully stopping server")
-	if err := store.Close(); err != nil {
+	if err := repo.Close(); err != nil {
 		logger.Fatal("Error closing store", logging.String("error", err.Error()))
 	}
 }

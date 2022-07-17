@@ -42,19 +42,19 @@ import (
 	"embed"
 	"io/fs"
 	"net/http"
-	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 
+	"github.com/rasulov-emirlan/todo-app/backends/config"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/todos"
 	"github.com/rasulov-emirlan/todo-app/backends/internal/domain/users"
 	"github.com/rasulov-emirlan/todo-app/backends/pkg/logging"
 	"github.com/rasulov-emirlan/todo-app/backends/pkg/validation"
 )
 
-type server struct {
+type Server struct {
 	server  *http.Server
 	address string
 
@@ -68,22 +68,19 @@ type server struct {
 }
 
 func NewServer(
-	corsOrigins []string,
-	address string,
-	rTimeout time.Duration,
-	wTimeout time.Duration,
+	cfg config.Config,
 	logger *logging.Logger,
 	validator *validation.Validator,
 	usersService users.Service,
 	todosService todos.Service,
-) *server {
-	return &server{
+) *Server {
+	return &Server{
 		server: &http.Server{
-			Addr:         address,
-			ReadTimeout:  rTimeout,
-			WriteTimeout: wTimeout,
+			Addr:         cfg.Port,
+			ReadTimeout:  cfg.ReadTimeout,
+			WriteTimeout: cfg.WriteTimeout,
 		},
-		address:      address,
+		address:      cfg.Port,
 		logger:       logger,
 		validator:    validator,
 		usersService: usersService,
@@ -91,7 +88,7 @@ func NewServer(
 	}
 }
 
-func (s *server) Run() error {
+func (s *Server) Run() error {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	s.setRoutes(router)
@@ -102,7 +99,7 @@ func (s *server) Run() error {
 //go:embed swaggerui
 var swagger embed.FS
 
-func (s *server) setRoutes(router *gin.Engine) {
+func (s *Server) setRoutes(router *gin.Engine) {
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
 		AllowMethods:     []string{"*"},
@@ -152,10 +149,10 @@ func (s *server) setRoutes(router *gin.Engine) {
 	}
 }
 
-func (s *server) Shutdown(ctx context.Context) error {
+func (s *Server) Shutdown(ctx context.Context) error {
 	return s.server.Shutdown(ctx)
 }
 
-func (s *server) Handler() http.Handler {
+func (s *Server) Handler() http.Handler {
 	return s.server.Handler
 }

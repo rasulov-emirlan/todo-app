@@ -3,6 +3,7 @@ package logging
 import (
 	"os"
 
+	"github.com/rasulov-emirlan/todo-app/backends/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -54,15 +55,15 @@ func String(key, data string) Field {
 	return zap.String(key, data)
 }
 
-func NewLogger(level string, output string) (*Logger, error) {
+func NewLogger(cfg config.Config) (*Logger, error) {
 	var (
 		logger Logger
 		err    error
 	)
 	config := zap.NewProductionConfig()
 
-	if output != "stdout" {
-		f, err := os.OpenFile(output, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0755)
+	if cfg.Log.Output != "stdout" {
+		f, err := os.OpenFile(cfg.Log.Output, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0755)
 		if err != nil {
 			return nil, err
 		}
@@ -71,7 +72,7 @@ func NewLogger(level string, output string) (*Logger, error) {
 
 	config.Encoding = "json"
 	lvl := zapcore.DebugLevel
-	switch level {
+	switch cfg.Log.Level {
 	case InfoLevel:
 		lvl = zapcore.InfoLevel
 	case WarnLevel:

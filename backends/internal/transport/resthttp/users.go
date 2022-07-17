@@ -128,7 +128,7 @@ var (
 //       default: usersKeys
 //       200: usersKeys
 //       422: stdResponse
-func (s *server) UsersSignUp(ctx *gin.Context) {
+func (s *Server) UsersSignUp(ctx *gin.Context) {
 	var inp reqUsersSignUp
 	if err := ctx.ShouldBindJSON(&inp); err != nil {
 		if errors.Is(err, io.EOF) {
@@ -206,7 +206,7 @@ func (s *server) UsersSignUp(ctx *gin.Context) {
 //       default: usersKeys
 //       200: usersKeys
 //       422: stdResponse
-func (s *server) UsersSignIn(ctx *gin.Context) {
+func (s *Server) UsersSignIn(ctx *gin.Context) {
 	var inp reqUsersSignIn
 
 	if err := ctx.ShouldBindJSON(&inp); err != nil {
@@ -280,7 +280,7 @@ func (s *server) UsersSignIn(ctx *gin.Context) {
 //       default: usersKeys
 //       200: usersKeys
 //       422: stdResponse
-func (s *server) UsersRefresh(ctx *gin.Context) {
+func (s *Server) UsersRefresh(ctx *gin.Context) {
 	var inp reqUsersRefresh
 	if err := ctx.ShouldBindJSON(&inp); err != nil {
 		inp.RefreshKey, err = ctx.Cookie(cookieNameRefreshKey)
@@ -340,7 +340,7 @@ func (s *server) UsersRefresh(ctx *gin.Context) {
 //
 //     Responses:
 //       default: stdResponse
-func (s *server) UsersLogout(ctx *gin.Context) {
+func (s *Server) UsersLogout(ctx *gin.Context) {
 	ctx.SetCookie(
 		cookieNameRefreshKey,
 		"",
@@ -354,7 +354,7 @@ func (s *server) UsersLogout(ctx *gin.Context) {
 	respond(ctx, http.StatusOK, nil, nil)
 }
 
-func (s *server) UsersDelete(ctx *gin.Context) {
+func (s *Server) UsersDelete(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {
 		respond(

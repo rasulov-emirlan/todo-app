@@ -17,7 +17,7 @@ var (
 	ErrNoCredentials = errors.New("could not find Athorization Bearer token in headers")
 )
 
-func (s *server) isAdmin(ctx *gin.Context) {
+func (s *Server) isAdmin(ctx *gin.Context) {
 	c, ok := ctx.Get(usersInfoInContext)
 	if !ok {
 		ctx.AbortWithStatus(http.StatusUnauthorized)
@@ -35,7 +35,7 @@ func (s *server) isAdmin(ctx *gin.Context) {
 	ctx.Next()
 }
 
-func (s *server) requireAuth(ctx *gin.Context) {
+func (s *Server) requireAuth(ctx *gin.Context) {
 	accessKey := ctx.Request.Header.Get("Authorization")
 	if accessKey == "" {
 		ctx.AbortWithStatus(http.StatusForbidden)
