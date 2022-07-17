@@ -156,6 +156,8 @@ func (s *service) Delete(ctx context.Context, userID, id string) error {
 	return nil
 }
 
+// TODO: rewrite this function so we wont use repo calls at all
+// We can get all the info we need from users accessKey so yeah
 func (s *service) isAllowed(ctx context.Context, userID, todoID string) (bool, error) {
 	u, err := s.uRepo.Get(ctx, userID)
 	if err != nil {

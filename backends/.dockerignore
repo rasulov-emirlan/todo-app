@@ -1,0 +1,5 @@
+**/bin/**
+Makefile
+README.md
+.gitignore
+example.env
