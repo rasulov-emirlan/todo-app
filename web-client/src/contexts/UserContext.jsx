@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { isUserSignedIn } from "../api/user";
 
 const UserContext = createContext();
 const UserSetSigninContext = createContext();
@@ -20,6 +21,13 @@ const UserContextProvider = ({ children }) => {
 		setCurrentUser((prev) => ({ ...prev, isSignedIn: isTrue }));
 	};
 
+	useEffect(() => {
+		if (isUserSignedIn()) {
+			setUsersSignin(true);
+		} else {
+			setUsersSignin(false);
+		}
+	}, []);
 	return (
 		<UserContext.Provider value={currentUser}>
 			<UserSetSigninContext.Provider value={setUsersSignin}>

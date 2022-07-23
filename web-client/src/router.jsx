@@ -25,6 +25,7 @@ export const CustomRouter = () => {
 			<Routes>
 				{routes.map((r, i) => (
 					<>
+						{/* TODO: fix key prop error */}
 						{currentUser.isSignedIn === false && r.needAuth ? (
 							<Route
 								key={i}

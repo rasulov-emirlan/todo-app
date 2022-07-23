@@ -103,7 +103,7 @@ func (s *Server) setRoutes(router *gin.Engine) {
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
 		AllowMethods:     []string{"*"},
-		AllowHeaders:     []string{"*", "content-type"},
+		AllowHeaders:     []string{"*", "Content-type", "Authorization"},
 		AllowCredentials: true,
 		AllowWildcard:    true,
 	}))

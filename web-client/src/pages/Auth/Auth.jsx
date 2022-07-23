@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { setInterceptors } from "../../api";
 import { usersSignIn, usersSignUp } from "../../api/user";
 import { useSetCurrentUserSignin } from "../../contexts/UserContext";
 
@@ -62,7 +61,6 @@ const SignUp = ({ setWarnings }) => {
 		e.preventDefault();
 		const data = await usersSignUp(form.email, form.password, form.username);
 		if (data.status === 200) {
-			setInterceptors(data.data.accessToken);
 			setCurrentUserSignin(true);
 			return;
 		}
@@ -131,7 +129,6 @@ const SignIn = ({ setWarnings }) => {
 		try {
 			const data = await usersSignIn(form.email, form.password);
 			if (data.status === 200) {
-				setInterceptors(data.data.accessToken);
 				setCurrentUserSignin(true);
 				return;
 			}

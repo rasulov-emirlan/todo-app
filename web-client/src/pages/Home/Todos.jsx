@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
+import { todosGetAll } from "../../api/todos";
 import { Todo } from "../../components";
 import styles from "./Todos.module.css";
 
@@ -108,6 +109,10 @@ const Todos = () => {
 			return t;
 		});
 	};
+
+	useEffect(() => {
+		const data = todosGetAll(10, 0, "creationASC", false);
+	}, []);
 
 	return (
 		<div className='p-2 flex flex-col gap-3 w-full overflow-y-scroll h-screen scroll-smooth'>

@@ -1,44 +1,28 @@
 import axios from "axios";
 import { usersRefresh } from "./user";
 
+export let token = "accessToken";
+
 export const $api = axios.create({
 	baseURL: "http://localhost:8080/api",
 	withCredentials: true,
+	headers: {
+		"Content-Type": "application/json",
+		Authorization: `Bearer ${token}`,
+	},
 });
 
 $api.interceptors.response.use(
 	(response) => {
 		return response;
 	},
-	async function (error) {
-		const originalRequest = error.config;
-		if (error.response.status === 403 && !originalRequest._retry) {
-			originalRequest._retry = true;
-			const { data } = await usersRefresh();
-			axios.defaults.headers.common["Authorization"] =
-				"Bearer " + data.accessToken;
-			return $api(originalRequest);
+	(error) => {
+		if (error.response.status === 403) {
+			return usersRefresh().then((data) => {
+				token = data.accessToken;
+				return $api.request(error.config);
+			});
 		}
 		return Promise.reject(error);
 	}
 );
-
-// IMPORTANT
-// this function should be called
-// after each sign in of the user
-export const setInterceptors = (accessToken) => {
-	$api.interceptors.request.use(
-		async (config) => {
-			config.headers = {
-				Authorization: `Bearer ${accessToken}`,
-				Accept: "application/json",
-				"Content-Type": "application/x-www-form-urlencoded",
-			};
-			return config;
-		},
-
-		(error) => {
-			Promise.reject(error);
-		}
-	);
-};

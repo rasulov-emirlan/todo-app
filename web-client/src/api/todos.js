@@ -1,26 +1,29 @@
 import { $api } from ".";
 
-export const todosCreate = (title, body, deadline) => {
-	return $api.post("/todos", {
+export const todosCreate = async (title, body, deadline) => {
+	const { data } = await $api.post("/todos", {
 		title: title,
 		body: body,
 		deadline: deadline,
 	});
+	return data;
 };
 
-export const todosUpdate = (title, body, deadline) => {
-	return $api.patch("/todos", {
+export const todosUpdate = async (title, body, deadline) => {
+	const { data } = await $api.patch("/todos", {
 		title: title,
 		body: body,
 		deadline: deadline,
 	});
+	return data;
 };
 
-export const todosGet = (id) => {
-	return $api.get(`/todos/${id}`);
+export const todosGet = async (id) => {
+	const { data } = await $api.get(`/todos/${id}`);
+	return data;
 };
 
-export const todosGetAll = (pageSize, page, sortBy, onlyCompleted) => {
+export const todosGetAll = async (pageSize, page, sortBy, onlyCompleted) => {
 	let req = "/todos";
 	if (pageSize !== null) {
 		if (req.charAt(req.length - 1) !== "?") {
@@ -50,17 +53,21 @@ export const todosGetAll = (pageSize, page, sortBy, onlyCompleted) => {
 			req += `&onlyCompleted=${onlyCompleted}`;
 		}
 	}
-	return $api.get(req);
+	const { data } = await $api.get(req);
+	return data;
 };
 
-const todosDelete = (id) => {
-	return $api.delete(`todos/${id}`);
+const todosDelete = async (id) => {
+	const { data } = await $api.delete(`todos/${id}`);
+	return data;
 };
 
-const todosMakrAsComplete = (id) => {
-	return $api.put(`todos/${id}/complete`);
+const todosMakrAsComplete = async (id) => {
+	const { data } = await $api.put(`todos/${id}/complete`);
+	return data;
 };
 
-const todosMakrAsNotComplete = (id) => {
-	return $api.put(`todos/${id}/incomplete`);
+const todosMakrAsNotComplete = async (id) => {
+	const { data } = await $api.put(`todos/${id}/incomplete`);
+	return data;
 };
