@@ -24,36 +24,14 @@ export const todosGet = async (id) => {
 };
 
 export const todosGetAll = async (pageSize, page, sortBy, onlyCompleted) => {
-	let req = "/todos";
-	if (pageSize !== null) {
-		if (req.charAt(req.length - 1) !== "?") {
-			req += `?pageSize=${pageSize}`;
-		} else {
-			req += `&pageSize=${pageSize}`;
-		}
-	}
-	if (page !== null) {
-		if (req.charAt(req.length - 1) !== "?") {
-			req += `?page=${page}`;
-		} else {
-			req += `&page=${page}`;
-		}
-	}
-	if (sortBy !== null) {
-		if (req.charAt(req.length - 1) !== "?") {
-			req += `?sortBy=${sortBy}`;
-		} else {
-			req += `&sortBy=${sortBy}`;
-		}
-	}
-	if (onlyCompleted !== null) {
-		if (req.charAt(req.length - 1) !== "?") {
-			req += `?onlyCompleted=${onlyCompleted}`;
-		} else {
-			req += `&onlyCompleted=${onlyCompleted}`;
-		}
-	}
-	const { data } = await $api.get(req);
+	const { data } = await $api.get("/todos", {
+		params: {
+			pageSize: pageSize,
+			page: page,
+			sortBy: sortBy,
+			onlyCompleted: onlyCompleted,
+		},
+	});
 	return data;
 };
 

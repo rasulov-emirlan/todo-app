@@ -8,7 +8,6 @@ export const $api = axios.create({
 	withCredentials: true,
 	headers: {
 		"Content-Type": "application/json",
-		Authorization: `Bearer ${token}`,
 	},
 });
 
@@ -16,12 +15,14 @@ $api.interceptors.response.use(
 	(response) => {
 		return response;
 	},
-	(error) => {
-		if (error.response.status === 403) {
-			return usersRefresh().then((data) => {
-				token = data.accessToken;
-				return $api.request(error.config);
-			});
+	async (error) => {
+		if (error.response.status === 403 && !error.config._retry) {
+			error.config._retry = true;
+			const data = await usersRefresh();
+			token = data.data.accessKey;
+			console.log(data, "bro this is it");
+			$api.defaults.headers.Authorization = `Bearer ${data.data.accessKey}`;
+			return $api(error.config);
 		}
 		return Promise.reject(error);
 	}

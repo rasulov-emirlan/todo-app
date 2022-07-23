@@ -10,38 +10,7 @@ const Todos = () => {
 	// this is not good
 	// in real world app this array of todos should not be filled from the start
 	// we should fill with data from api. and we should do in a separate useEffect
-	const [todos, setTodos] = useState([
-		{
-			title: "This is a todo for Emirlan Rasulov",
-			body: "This is a body of my todo. Emirlan please do not forget to add logging to our todo app.",
-			author: {
-				username: "enkidux",
-			},
-			deadline: new Date(),
-			createdAt: new Date(),
-			updatedAt: null,
-		},
-		{
-			title: "This is a todo for Emirlan Rasulov",
-			body: "This is a body of my todo. Emirlan please do not forget to add logging to our todo app.",
-			author: {
-				username: "enkidux",
-			},
-			deadline: new Date(),
-			createdAt: new Date(),
-			updatedAt: null,
-		},
-		{
-			title: "This is a todo for Emirlan Rasulov",
-			body: "This is a body of my todo. Emirlan please do not forget to add logging to our todo app.",
-			author: {
-				username: "enkidux",
-			},
-			deadline: new Date(),
-			createdAt: new Date(),
-			updatedAt: null,
-		},
-	]);
+	const [todos, setTodos] = useState([]);
 	const [newtodo, setNewtodo] = useState({
 		title: "",
 		body: "",
@@ -59,6 +28,8 @@ const Todos = () => {
 
 	const handleCreateTodo = () => {
 		if (newtodo.title.length < 6 || newtodo.title.length > 100) {
+			// TODO: please change this code
+			// its so stupid and ugly
 			if (
 				warnings.includes(
 					"title has to be longer than 6 chars and shorter than 100"
@@ -112,6 +83,7 @@ const Todos = () => {
 
 	useEffect(() => {
 		const data = todosGetAll(10, 0, "creationASC", false);
+		setTodos(data);
 	}, []);
 
 	return (
@@ -170,9 +142,7 @@ const Todos = () => {
 				grid in regular css
 			 */}
 			<div className={styles.todos}>
-				{todos.map((v, i) => (
-					<Todo key={i} todo={v} />
-				))}
+				{typeof todos === [] && todos.map((v, i) => <Todo key={i} todo={v} />)}
 			</div>
 		</div>
 	);
