@@ -127,6 +127,7 @@ func (s *Server) setRoutes(router *gin.Engine) {
 
 	usersGroup := api.Group("users")
 	{
+		// TODO: make handlers private functions
 		// TODO: separate users logic and auth
 		usersGroup.POST("/auth/signup", s.UsersSignUp)
 		usersGroup.POST("/auth/signin", s.UsersSignIn)
@@ -134,6 +135,7 @@ func (s *Server) setRoutes(router *gin.Engine) {
 		usersGroup.DELETE("/auth/logout", s.UsersLogout)
 
 		usersGroup.DELETE("/:id", s.requireAuth, s.isAdmin, s.UsersDelete)
+		usersGroup.GET("/:id", s.requireAuth, s.usersMe)
 	}
 
 	todosGroup := api.Group("todos", s.requireAuth)

@@ -45,3 +45,8 @@ export const isUserSignedIn = async () => {
 		return true;
 	}
 };
+
+export const usersMe = async () => {
+	const data = await $api.get("/users/me");
+	return data.data;
+};

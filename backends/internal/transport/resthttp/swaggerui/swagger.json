@@ -633,6 +633,84 @@
           }
         }
       }
+    },
+    "/users/me": {
+      "get": {
+        "security": [
+          {
+            "Bearer": [
+              "[]"
+            ]
+          }
+        ],
+        "description": "This will return current user.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "users"
+        ],
+        "summary": "Get current user",
+        "operationId": "UsersMe",
+        "responses": {
+          "default": {
+            "description": "usersMeResponse",
+            "schema": {
+              "$ref": "#/definitions/usersMeResponse"
+            }
+          }
+        }
+      }
+    },
+    "/users{id}": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": [
+              "[]"
+            ]
+          }
+        ],
+        "description": "This will delete delete user.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "users"
+        ],
+        "summary": "Delete a user",
+        "operationId": "UsersDelete",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Id of the user you wish to delete",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "stdResponse",
+            "schema": {
+              "$ref": "#/definitions/stdResponse"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -1073,6 +1151,38 @@
         }
       },
       "x-go-name": "_",
+      "x-go-package": "github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp"
+    },
+    "usersMeResponse": {
+      "description": "user represents a response for /users/me endpoint",
+      "type": "object",
+      "properties": {
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "CreatedAt"
+        },
+        "email": {
+          "type": "string",
+          "x-go-name": "Email"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "role": {
+          "$ref": "#/definitions/Role"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "UpdatedAt"
+        },
+        "username": {
+          "type": "string",
+          "x-go-name": "Username"
+        }
+      },
       "x-go-package": "github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp"
     }
   },

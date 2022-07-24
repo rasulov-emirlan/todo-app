@@ -78,6 +78,19 @@ type (
 		refresh_key string
 	}
 
+	// user represents a response for /users/me endpoint
+	// swagger:model
+	usersMeResponse struct {
+		ID       string `json:"id"`
+		Username string `json:"username"`
+		Email    string `json:"email"`
+
+		Role users.Role `json:"role"`
+
+		CreatedAt time.Time `json:"createdAt"`
+		UpdatedAt time.Time `json:"updatedAt"`
+	}
+
 	// reqUsersRefresh is used for mobile clients. They should send their refresh keys in this model to refresh endpoint for updating their keys
 	//
 	// swagger:model
@@ -354,6 +367,35 @@ func (s *Server) UsersLogout(ctx *gin.Context) {
 	respond(ctx, http.StatusOK, nil, nil)
 }
 
+// swagger:route DELETE /users{id} users UsersDelete
+//
+// Delete a user
+//
+// This will delete delete user.
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//
+//     Schemes: http, https
+//
+//     Deprecated: false
+//
+//     Security:
+//      - Bearer: []
+//
+//     Parameters:
+//       + name: id
+//         in: params
+//         required: true
+//         description: Id of the user you wish to delete
+//         type: string
+//         example: '89cd8496-07cd-4caf-a9a5-ac3b8e65d05b'
+//
+//     Responses:
+//       default: stdResponse
 func (s *Server) UsersDelete(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if len(id) == 0 {
@@ -377,4 +419,51 @@ func (s *Server) UsersDelete(ctx *gin.Context) {
 	}
 
 	respond(ctx, http.StatusOK, nil, nil)
+}
+
+// swagger:route GET /users/me users UsersMe
+//
+// Get current user
+//
+// This will return current user.
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//
+//     Schemes: http, https
+//
+//     Deprecated: false
+//
+//     Security:
+//      - Bearer: []
+//
+//     Responses:
+//       default: usersMeResponse
+func (s *Server) usersMe(ctx *gin.Context) {
+	d, err := getUserData(ctx)
+	if err != nil {
+		respond(
+			ctx,
+			http.StatusUnauthorized,
+			nil,
+			[]string{err.Error()},
+		)
+		return
+	}
+
+	out, err := s.usersService.Me(ctx, d.ID)
+	if err != nil {
+		respond(
+			ctx,
+			http.StatusInternalServerError,
+			nil,
+			[]string{err.Error()},
+		)
+		return
+	}
+
+	respond(ctx, http.StatusOK, out, nil)
 }

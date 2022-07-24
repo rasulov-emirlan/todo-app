@@ -3,6 +3,7 @@ package users
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -27,6 +28,8 @@ type (
 	Service interface {
 		SignUp(ctx context.Context, inp SignUpInput) (SignInOutput, error)
 		SignIn(ctx context.Context, email, password string) (SignInOutput, error)
+
+		Me(ctx context.Context, id string) (User, error)
 
 		UnpackAccessKey(ctx context.Context, accessKey string) (JWTaccess, error)
 		Refresh(ctx context.Context, refreshKey string) (SignInOutput, error)
@@ -98,11 +101,32 @@ func (s *service) SignIn(ctx context.Context, email, password string) (SignInOut
 			return SignInOutput{}, ErrWrongPassword
 		}
 		// TODO: not sure what to do here. is it ok to return err from bcrypt?
-		s.log.Error("users: SignIn(): could not compare passwords", logging.String("error", err.Error()))
+		s.log.Error(
+			"users: SignIn(): could not compare passwords",
+			logging.String("error", err.Error()),
+		)
 		return SignInOutput{}, ErrWrongPassword
 	}
 
 	return generateKeys(user, s.secretKey, accessLifeTime, refreshLifeTime)
+}
+
+func (s *service) Me(ctx context.Context, id string) (User, error) {
+	defer s.log.Sync()
+	s.log.Info("users: Me(): start")
+	u, err := s.repo.Get(ctx, id)
+	if err != nil {
+		s.log.Debug(
+			"users: Me(): could not get user",
+			logging.String("id", id),
+			logging.String("error", err.Error()),
+		)
+		// TODO: add context like this to all errors in this service
+		return User{}, fmt.Errorf("could not get user from database: %w", err)
+	}
+	// TODO: create a sanitizer for this
+	u.PasswordHash = ""
+	return u, nil
 }
 
 func (s *service) Refresh(ctx context.Context, refreshKey string) (SignInOutput, error) {

@@ -513,6 +513,30 @@ definitions:
     type: object
     x-go-name: _
     x-go-package: github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp
+  usersMeResponse:
+    description: user represents a response for /users/me endpoint
+    properties:
+      createdAt:
+        format: date-time
+        type: string
+        x-go-name: CreatedAt
+      email:
+        type: string
+        x-go-name: Email
+      id:
+        type: string
+        x-go-name: ID
+      role:
+        $ref: '#/definitions/Role'
+      updatedAt:
+        format: date-time
+        type: string
+        x-go-name: UpdatedAt
+      username:
+        type: string
+        x-go-name: Username
+    type: object
+    x-go-package: github.com/rasulov-emirlan/todo-app/backends/internal/transport/resthttp
 info:
   contact:
     email: rasulov.emirlan@gmail.com
@@ -937,6 +961,55 @@ paths:
       summary: Sign up a user
       tags:
       - auth
+  /users/me:
+    get:
+      consumes:
+      - application/json
+      description: This will return current user.
+      operationId: UsersMe
+      produces:
+      - application/json
+      responses:
+        default:
+          description: usersMeResponse
+          schema:
+            $ref: '#/definitions/usersMeResponse'
+      schemes:
+      - http
+      - https
+      security:
+      - Bearer:
+        - '[]'
+      summary: Get current user
+      tags:
+      - users
+  /users{id}:
+    delete:
+      consumes:
+      - application/json
+      description: This will delete delete user.
+      operationId: UsersDelete
+      parameters:
+      - description: Id of the user you wish to delete
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        default:
+          description: stdResponse
+          schema:
+            $ref: '#/definitions/stdResponse'
+      schemes:
+      - http
+      - https
+      security:
+      - Bearer:
+        - '[]'
+      summary: Delete a user
+      tags:
+      - users
 produces:
 - application/json
 - application/xml
