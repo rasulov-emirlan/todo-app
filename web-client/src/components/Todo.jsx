@@ -6,14 +6,14 @@ const Todo = ({ todo }) => {
 	return (
 		<div
 			className='
-				max-w-[600px] 
-				bg-white
-		 		text-black
-		 		border-1
-				border-gray-100
-		    	grid gap-4
+				border-1 
+				grid
+		 		max-w-[600px]
+		 		gap-4
 				rounded-md
-				p-4'>
+		    	border-gray-100 bg-white
+				p-4
+				text-black'>
 			<h3 className='text-3xl '>{todo.title}</h3>
 			<span className='text-lg text-gray-500'>
 				Created at {todo.createdAt.getFullYear()}-{todo.createdAt.getMonth()}-
@@ -26,9 +26,9 @@ const Todo = ({ todo }) => {
 			<p className=''>The body of a todo goes here bro</p>
 			<div
 				onClick={(e) => setIsDone((prev) => !prev)}
-				className={`flex items-center w-full bg-blue-500 rounded-md p-1`}>
+				className={`flex w-full items-center rounded-md bg-blue-500 p-1`}>
 				<button
-					className={`bg-white rounded-md w-1/2 p-2 transition-all
+					className={`w-1/2 rounded-md bg-white p-2 transition-all
 					${isDone ? " translate-x-0" : " translate-x-full bg-blue-500 text-white"}`}>
 					{isDone ? "completed" : "incomplete"}
 				</button>

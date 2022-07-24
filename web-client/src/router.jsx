@@ -9,11 +9,13 @@ const routes = [
 		route: "/",
 		elemnt: <Todos />,
 		needAuth: true,
+		adminOnly: false,
 	},
 	{
 		route: "/auth",
 		elemnt: <Auth />,
 		needAuth: false,
+		adminOnly: false,
 	},
 ];
 

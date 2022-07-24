@@ -10,19 +10,19 @@ const Auth = () => {
 	const [warnings, setWarnings] = useState([]);
 
 	return (
-		<div className='w-full h-full min-h-screen p-2'>
-			<div className='bg-mediumGray p-2 rounded-md min-h-[400px]'>
+		<div className='h-full min-h-screen w-full p-2'>
+			<div className='min-h-[400px] rounded-md bg-mediumGray p-2'>
 				<div
 					onClick={() => setMode((prev) => (prev === 1 ? 2 : 1))}
-					className=' bg-lightGray rounded-md p-2 max-w-[800px] mx-auto'>
+					className=' mx-auto max-w-[800px] rounded-md bg-lightGray p-2'>
 					<button
-						className={`w-1/2 p-2 rounded-md transition-all text-lightWhite ${
+						className={`w-1/2 rounded-md p-2 text-lightWhite transition-all ${
 							mode === 1 && "bg-mediumGray"
 						}`}>
 						Sign up
 					</button>
 					<button
-						className={`w-1/2 p-2 rounded-md transition-all text-lightWhite ${
+						className={`w-1/2 rounded-md p-2 text-lightWhite transition-all ${
 							mode === 2 && "bg-mediumGray"
 						}`}>
 						Sign in
@@ -69,9 +69,9 @@ const SignUp = ({ setWarnings }) => {
 	};
 
 	return (
-		<form className='flex flex-col items-center gap-2 mt-4'>
+		<form className='mt-4 flex flex-col items-center gap-2'>
 			<input
-				className='max-w-[800px] p-2 w-full outline-none rounded-md'
+				className='w-full max-w-[800px] rounded-md p-2 outline-none'
 				type='email'
 				value={form.email}
 				onChange={(e) =>
@@ -80,7 +80,7 @@ const SignUp = ({ setWarnings }) => {
 				placeholder='email...'
 			/>
 			<input
-				className='max-w-[800px] p-2 w-full outline-none rounded-md'
+				className='w-full max-w-[800px] rounded-md p-2 outline-none'
 				type='password'
 				value={form.password}
 				onChange={(e) =>
@@ -89,7 +89,7 @@ const SignUp = ({ setWarnings }) => {
 				placeholder='password...'
 			/>
 			<input
-				className='max-w-[800px] p-2 w-full outline-none rounded-md'
+				className='w-full max-w-[800px] rounded-md p-2 outline-none'
 				type='password'
 				value={form.passwordRepeat}
 				onChange={(e) =>
@@ -98,7 +98,7 @@ const SignUp = ({ setWarnings }) => {
 				placeholder='passwprd repeat...'
 			/>
 			<input
-				className='max-w-[800px] p-2 w-full outline-none rounded-md'
+				className='w-full max-w-[800px] rounded-md p-2 outline-none'
 				type='text'
 				value={form.username}
 				onChange={(e) =>
@@ -111,7 +111,7 @@ const SignUp = ({ setWarnings }) => {
 				onClick={(e) => handleSubmit(e)}
 				type='submit'
 				value='Sign Up'
-				className='bg-lightGray hover:bg-gray-600 border-gray-700 shadow-md cursor-pointer w-1/3 max-w-[500px] p-2 rounded-md text-white shadow-mdmax-w-[800px]'
+				className='shadow-mdmax-w-[800px] w-1/3 max-w-[500px] cursor-pointer rounded-md border-gray-700 bg-lightGray p-2 text-white shadow-md hover:bg-gray-600'
 			/>
 		</form>
 	);
@@ -139,9 +139,9 @@ const SignIn = ({ setWarnings }) => {
 	};
 
 	return (
-		<form className='flex flex-col items-center gap-2 mt-4'>
+		<form className='mt-4 flex flex-col items-center gap-2'>
 			<input
-				className='max-w-[800px] p-2 w-full border-blue-500 border rounded-md'
+				className='w-full max-w-[800px] rounded-md border border-blue-500 p-2'
 				type='email'
 				value={form.email}
 				onChange={(e) =>
@@ -150,7 +150,7 @@ const SignIn = ({ setWarnings }) => {
 				placeholder='email...'
 			/>
 			<input
-				className='max-w-[800px] p-2 w-full border-blue-500 border rounded-md'
+				className='w-full max-w-[800px] rounded-md border border-blue-500 p-2'
 				type='password'
 				value={form.password}
 				onChange={(e) =>
@@ -163,7 +163,7 @@ const SignIn = ({ setWarnings }) => {
 				onClick={(e) => handleSubmit(e)}
 				type='submit'
 				value='Sign Up'
-				className='bg-blue-500 w-1/3 max-w-[500px] p-2 rounded-md text-white shadow-mdmax-w-[800px]'
+				className='shadow-mdmax-w-[800px] w-1/3 max-w-[500px] rounded-md bg-blue-500 p-2 text-white'
 			/>
 		</form>
 	);

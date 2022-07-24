@@ -87,15 +87,15 @@ const Todos = () => {
 	}, []);
 
 	return (
-		<div className='p-2 flex flex-col gap-3 w-full overflow-y-scroll h-screen scroll-smooth'>
-			<div className='bg-white p-2 rounded-md flex flex-col gap-3'>
+		<div className='flex h-screen w-full flex-col gap-3 overflow-y-scroll scroll-smooth p-2'>
+			<div className='flex flex-col gap-3 rounded-md bg-white p-2'>
 				<div
-					className={`w-full bg-red-200 text-red-500 flex flex-col gap-2 rounded-md ${
+					className={`flex w-full flex-col gap-2 rounded-md bg-red-200 text-red-500 ${
 						// we add padding and border this way cause
 						// if there are no wornings we do not want to see this
 						// div at all. and these borders and paddings were
 						// in the way of this
-						warnings.length != 0 && "p-2 border border-red-500"
+						warnings.length != 0 && "border border-red-500 p-2"
 					}`}>
 					{warnings.map((w, i) => (
 						<span key={i}>*{w}</span>
@@ -103,7 +103,7 @@ const Todos = () => {
 				</div>
 				<input
 					type='text'
-					className='rounded-md w-full p-2 border-gray-200 border'
+					className='w-full rounded-md border border-gray-200 p-2'
 					placeholder='title...'
 					value={newtodo.title}
 					onChange={(e) =>
@@ -112,7 +112,7 @@ const Todos = () => {
 				/>
 				<input
 					type='text'
-					className='rounded-md w-full p-2 border-gray-200 border'
+					className='w-full rounded-md border border-gray-200 p-2'
 					placeholder='body...'
 					value={newtodo.body}
 					onChange={(e) =>
@@ -121,7 +121,7 @@ const Todos = () => {
 				/>
 				<label htmlFor='deadline text-'>deadline</label>
 				<input
-					className='text-black border rounded-md p-2'
+					className='rounded-md border p-2 text-black'
 					type='date'
 					name='deadline'
 					id='deadline'
@@ -132,7 +132,7 @@ const Todos = () => {
 				/>
 				<button
 					onClick={(e) => handleCreateTodo()}
-					className='bg-blue-500 text-white w-full p-2 rounded-md hover:bg-blue-600'>
+					className='w-full rounded-md bg-blue-500 p-2 text-white hover:bg-blue-600'>
 					create
 				</button>
 			</div>
