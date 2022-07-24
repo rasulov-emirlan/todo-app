@@ -1,5 +1,5 @@
-import Auth from "./pages/Auth/Auth";
-import Todos from "./pages/Home/Todos";
+import Auth from "./pages/Auth";
+import Todos from "./pages/Home";
 
 import { Route, Routes } from "react-router-dom";
 import { useCurrentUser } from "./contexts/UserContext";
@@ -35,9 +35,9 @@ export const CustomRouter = () => {
 								element={
 									<div
 										className='
-                                            w-full h-full 
-                                            min-h-screen flex flex-col 
-                                            justify-center items-center bg-white'>
+                                            flex h-full 
+                                            min-h-screen w-full flex-col 
+                                            items-center justify-center bg-white'>
 										<h1 className='text-xl'>
 											Please{" "}
 											<a href='/auth' className='text-blue-500'>

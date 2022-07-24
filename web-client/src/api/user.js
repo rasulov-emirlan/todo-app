@@ -1,4 +1,4 @@
-import { $api, token } from ".";
+import { $api } from ".";
 
 export const usersSignUp = async (email, password, username) => {
 	const resp = await $api.post("/users/auth/signup", {
@@ -7,7 +7,6 @@ export const usersSignUp = async (email, password, username) => {
 		username: username,
 	});
 	if (resp.status === 200) {
-		token = resp.data.accessToken;
 		return resp.data;
 	}
 };
@@ -24,7 +23,6 @@ export const usersSignIn = async (email, password) => {
 		}
 	);
 	if (resp.status === 200) {
-		token = resp.data.accessToken;
 		return resp.data;
 	}
 };

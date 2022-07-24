@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
-import { todosGetAll } from "../../api/todos";
+import moment from "moment";
+import { todosCreate, todosGetAll } from "../../api/todos";
 import { Todo } from "../../components";
 import styles from "./Todos.module.css";
 
@@ -26,64 +27,28 @@ const Todos = () => {
 	// but i am too lazy to refactor
 	const [warnings, setWarnings] = useState([]);
 
-	const handleCreateTodo = () => {
-		if (newtodo.title.length < 6 || newtodo.title.length > 100) {
-			// TODO: please change this code
-			// its so stupid and ugly
-			if (
-				warnings.includes(
-					"title has to be longer than 6 chars and shorter than 100"
-				) === true
-			) {
-				return;
-			}
-			setWarnings((prev) => {
-				let t = [...prev];
-				t.push("title has to be longer than 6 chars and shorter than 100");
-				return t;
-			});
-			return;
-		}
-		if (newtodo.body.length > 2000) {
-			// TODO: bruh this is so bad wtf
-			if (warnings.includes("body has to be shorted than 2000") === true) {
-				return;
-			}
-			setWarnings((prev) => {
-				let t = [...prev];
-				t.push("body has to be shorted than 2000");
-				return t;
-			});
-			return;
-		}
+	const loadTodos = async () => {
+		const data = await todosGetAll(10, 0, "creationASC", false);
+		setTodos(data.data);
+		console.log(data.data);
+	};
+
+	const handleCreateTodo = async () => {
 		let deadline = new Date(newtodo.deadline);
-		if (deadline === "Invalid Date" || isNaN(deadline)) {
-			if (warnings.includes("deadsline is not set") === true) {
-				return;
-			}
-			setWarnings((prev) => {
-				let t = [...prev];
-				t.push("deadsline is not set");
-				return t;
-			});
+		const data = await todosCreate(
+			newtodo.title,
+			newtodo.body,
+			moment(deadline).format("YYYY-MM-DDTHH:mm:ssZ")
+		);
+		if (!data.errors) {
+			loadTodos();
 			return;
 		}
-		setWarnings([]);
-		setTodos((prev) => {
-			// TODO: we probably could push our newtodo to the prev rigth away
-			let t = [...prev];
-			let tt = { ...newtodo };
-			tt.deadline = deadline;
-			tt.createdAt = new Date();
-			tt.updatedAt = new Date();
-			t.push(tt);
-			return t;
-		});
+		setWarnings(data.errors);
 	};
 
 	useEffect(() => {
-		const data = todosGetAll(10, 0, "creationASC", false);
-		setTodos(data);
+		loadTodos();
 	}, []);
 
 	return (
@@ -122,7 +87,7 @@ const Todos = () => {
 				<label htmlFor='deadline text-'>deadline</label>
 				<input
 					className='rounded-md border p-2 text-black'
-					type='date'
+					type='datetime-local'
 					name='deadline'
 					id='deadline'
 					value={newtodo.deadline}
@@ -142,7 +107,7 @@ const Todos = () => {
 				grid in regular css
 			 */}
 			<div className={styles.todos}>
-				{typeof todos === [] && todos.map((v, i) => <Todo key={i} todo={v} />)}
+				{Array.isArray(todos) && todos.map((v, i) => <Todo key={i} todo={v} />)}
 			</div>
 		</div>
 	);

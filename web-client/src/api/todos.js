@@ -1,12 +1,18 @@
 import { $api } from ".";
 
 export const todosCreate = async (title, body, deadline) => {
-	const { data } = await $api.post("/todos", {
-		title: title,
-		body: body,
-		deadline: deadline,
-	});
-	return data;
+	const data = await $api.post(
+		"/todos",
+		{
+			title: title,
+			body: body,
+			deadline: deadline,
+		},
+		{
+			withCredentials: true,
+		}
+	);
+	return data.data;
 };
 
 export const todosUpdate = async (title, body, deadline) => {
