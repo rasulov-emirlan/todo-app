@@ -85,6 +85,7 @@ func NewLogger(cfg config.Config) (*Logger, error) {
 		lvl = zap.DPanicLevel
 	}
 
+	config.EncoderConfig.CallerKey = zapcore.OmitKey
 	config.Level = zap.NewAtomicLevelAt(lvl)
 
 	logger.logger, err = config.Build()

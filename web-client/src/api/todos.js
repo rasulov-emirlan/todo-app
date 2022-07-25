@@ -41,17 +41,29 @@ export const todosGetAll = async (pageSize, page, sortBy, onlyCompleted) => {
 	return data;
 };
 
-const todosDelete = async (id) => {
+export const todosDelete = async (id) => {
 	const { data } = await $api.delete(`todos/${id}`);
 	return data;
 };
 
-const todosMakrAsComplete = async (id) => {
-	const { data } = await $api.put(`todos/${id}/complete`);
+export const todosMakrAsComplete = async (id) => {
+	const { data } = await $api.put(
+		`todos/${id}/complete`,
+		{},
+		{
+			withCredentials: true,
+		}
+	);
 	return data;
 };
 
-const todosMakrAsNotComplete = async (id) => {
-	const { data } = await $api.put(`todos/${id}/incomplete`);
+export const todosMakrAsNotComplete = async (id) => {
+	const { data } = await $api.put(
+		`todos/${id}/incomplete`,
+		{},
+		{
+			withCredentials: true,
+		}
+	);
 	return data;
 };

@@ -1,8 +1,17 @@
 import React from "react";
 import { useState } from "react";
+import { todosMakrAsComplete, todosMakrAsNotComplete } from "../api/todos";
 
 const Todo = ({ todo }) => {
-	const [isDone, setIsDone] = useState(false);
+	const [isDone, setIsDone] = useState(todo.completed);
+	const handleClick = async () => {
+		if (isDone) {
+			const data = await todosMakrAsNotComplete(todo.id);
+		} else {
+			const data = await todosMakrAsComplete(todo.id);
+		}
+		setIsDone(!isDone);
+	}
 	return (
 		<div
 			className='
@@ -25,9 +34,10 @@ const Todo = ({ todo }) => {
 			</span> */}
 			<p className=''>The body of a todo goes here bro</p>
 			<div
-				onClick={(e) => setIsDone((prev) => !prev)}
+				onClick={() => setIsDone((prev) => !prev)}
 				className={`flex w-full items-center rounded-md bg-blue-500 p-1`}>
 				<button
+					onClick={() => handleClick()}
 					className={`w-1/2 rounded-md bg-white p-2 transition-all
 					${isDone ? " translate-x-0" : " translate-x-full bg-blue-500 text-white"}`}>
 					{isDone ? "completed" : "incomplete"}

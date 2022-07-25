@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -378,6 +379,7 @@ func (s *Server) TodosGetAll(ctx *gin.Context) {
 	if sorting, ok := sortVariants[sortBy]; ok {
 		fSortBy = sorting
 	}
+	log.Println(fSortBy)
 
 	fOnlyCompleted := false
 	if onlyCompleted == "true" {

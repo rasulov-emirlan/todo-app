@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useReducer } from "react";
 import { useState } from "react";
 import moment from "moment";
 import { todosCreate, todosGetAll } from "../../api/todos";
@@ -22,15 +22,27 @@ const Todos = () => {
 		createdAt: "",
 		updatedAt: "",
 	});
+	const [pagination, dispatchPagination] = useReducer((state, actions) => {
+		return state + actions
+	}, {
+		page: 0,
+		pageSize: 10,
+		sortBy: "creationASC",
+		onlyCompleted: false,
+	})
 	// TODO: this is a very stupid way of handling warnings
 	// it is probably way better to use an object for this stuff
 	// but i am too lazy to refactor
 	const [warnings, setWarnings] = useState([]);
 
 	const loadTodos = async () => {
-		const data = await todosGetAll(10, 0, "creationASC", false);
+		const data = await todosGetAll(
+			pagination.pageSize,
+			pagination.page,
+			pagination.sortBy,
+			pagination.onlyCompleted
+		);
 		setTodos(data.data);
-		console.log(data.data);
 	};
 
 	const handleCreateTodo = async () => {
@@ -38,6 +50,7 @@ const Todos = () => {
 		const data = await todosCreate(
 			newtodo.title,
 			newtodo.body,
+			// TODO: do this without external libraries
 			moment(deadline).format("YYYY-MM-DDTHH:mm:ssZ")
 		);
 		if (!data.errors) {
@@ -84,7 +97,7 @@ const Todos = () => {
 						setNewtodo((prev) => ({ ...prev, body: e.target.value }))
 					}
 				/>
-				<label htmlFor='deadline text-'>deadline</label>
+				<label htmlFor='deadline'>deadline</label>
 				<input
 					className='rounded-md border p-2 text-black'
 					type='datetime-local'

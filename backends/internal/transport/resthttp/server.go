@@ -102,7 +102,7 @@ var swagger embed.FS
 func (s *Server) setRoutes(router *gin.Engine) {
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
-		AllowMethods:     []string{"*"},
+		AllowMethods:     []string{"*, PUT, GET, POST, DELETE, OPTIONS, HEAD, PATCH"},
 		AllowHeaders:     []string{"*", "Content-type", "Authorization"},
 		AllowCredentials: true,
 		AllowWildcard:    true,

@@ -101,18 +101,19 @@ var sortingVariants = map[todos.SortBy]string{
 }
 
 func (r *todosRepository) GetAll(ctx context.Context, config todos.GetAllInput) ([]todos.Todo, error) {
+	sorting, ok := sortingVariants[config.SortBy]
+	if !ok {
+		sorting = sortingVariants[todos.SortByCreationASC]
+	}
 	query := sq.
 		Select(`id, user_id, title, description, deadline, created_at, updated_at`).
 		From("todos").
 		Limit(uint64(config.PageSize)).
-		Offset(uint64(config.PageSize * config.Page))
+		Offset(uint64(config.PageSize * config.Page)).
+		OrderBy(sorting)
 
 	if len(config.UserID) != 0 {
-		query.Where(sq.Eq{"user_id::text": config.UserID})
-	}
-
-	if sorting, ok := sortingVariants[config.SortBy]; ok {
-		query.OrderBy(sorting)
+		query.Where(sq.Eq{"user_id": config.UserID})
 	}
 
 	sql, args, err := query.PlaceholderFormat(sq.Dollar).ToSql()
